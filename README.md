@@ -28,8 +28,8 @@ and in CI.
 
 - Node.js 26 LTS (see `.nvmrc`)
 - pnpm (`npm install -g pnpm`)
-- .NET SDK (the version eShop's README requires)
-- Docker Desktop
+- .NET 11 SDK (eShop's `global.json` requires 11.0.100 or later)
+- Docker Desktop, running
 
 ### Run eShop
 
@@ -47,6 +47,33 @@ listen on:
 | --- | --- |
 | Web app | `https://localhost:7298` |
 | Catalog API | `http://localhost:5222` |
+
+### Stop eShop
+
+The AppHost runs eShop's .NET services as local processes and its infrastructure (PostgreSQL,
+Redis, RabbitMQ) as containers. Press `Ctrl+C` in its terminal to stop everything it started.
+PostgreSQL and RabbitMQ are persistent containers and keep running so the next start is faster;
+stop them in Docker Desktop to free memory. Stop them, don't delete them: deleting the PostgreSQL
+container or its volume removes the data. To start again, run the AppHost; it starts the
+containers itself.
+
+### Database
+
+eShop stores its data in PostgreSQL, in the databases `catalogdb`, `identitydb`, `orderingdb`
+and `webhooksdb`. Table names are capitalized, so quote them in SQL (`select * from "Catalog"`).
+
+```bash
+# Container name, host port and password
+docker ps --filter name=postgres --format "{{.Names}}"
+docker port <container> 5432
+docker exec <container> printenv POSTGRES_PASSWORD
+
+# SQL prompt inside the container
+docker exec -it <container> sh -c 'PGPASSWORD="$POSTGRES_PASSWORD" psql -U postgres -d catalogdb'
+```
+
+From a GUI client (for example Microsoft's PostgreSQL extension for VS Code), connect to
+`127.0.0.1` on the host port above as user `postgres`, with SSL disabled.
 
 ### Run the tests
 

@@ -1,0 +1,34 @@
+# eshop-playwright-tests
+
+Playwright and TypeScript test suite for Microsoft's eShop reference app. This is a public
+portfolio project. The README covers setup, running eShop, the database and the folder layout;
+read it before changing anything.
+
+## Ground rules
+
+- Everything here is written from scratch. Never copy code, skills, prompts or internal
+  documentation from an employer's repository, and never cite one as a source.
+- This repo contains only tests. Never copy or modify eShop's source; eShop lives in its own
+  clone (`C:\GitHub\eShop` on the author's machine).
+- No secrets in the repo. `.env` is gitignored; `.env.example` holds only local URLs.
+
+## Toolchain
+
+- Node 26 (`.nvmrc`), pnpm (version pinned in `package.json`). Use pnpm, never npm or yarn.
+- `pnpm test`, `pnpm test:ui`, `pnpm test:api`, `pnpm typecheck`, `pnpm report`.
+- Run `pnpm typecheck` and the affected tests before every commit.
+- eShop must be running for tests to pass: start it with
+  `dotnet run --project src/eShop.AppHost/eShop.AppHost.csproj` from the eShop clone.
+  Web app `https://localhost:7298`, Catalog API `http://localhost:5222`.
+
+## Structure
+
+- `src/pages`: page objects. `src/api`: API clients. `src/fixtures/test.ts`: the `test` and
+  `expect` every spec imports. `src/data`: test data helpers. `src/config`: environment.
+- `tests/ui` runs in the `chromium` project, `tests/api` in the `api` project.
+- Specs import `test` and `expect` from `src/fixtures/test`, never from `@playwright/test`.
+
+## Skills
+
+Project skills live in `.claude/skills/<name>/SKILL.md`. They are being written one at a time,
+alongside the tests that use them.
