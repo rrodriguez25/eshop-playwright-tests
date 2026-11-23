@@ -43,7 +43,7 @@ export class CatalogApiService {
     brand?.forEach(b => qs.append('brand', String(b)));
 
     const response = await this.request.get(`${this.baseUrl}/api/catalog/items?${qs.toString()}`);
-    if (!response.ok()) throw new Error(`GET /api/catalog/items → ${response.status()}`);
+    if (!response.ok()) throw new Error(`GET /api/catalog/items -> ${response.status()}`);
     return response.json() as Promise<PaginatedCatalogItems>;
   }
 
@@ -51,7 +51,7 @@ export class CatalogApiService {
     const response = await this.request.get(`${this.baseUrl}/api/catalog/items/${id}`, {
       params: { 'api-version': '1.0' },
     });
-    if (!response.ok()) throw new Error(`GET /api/catalog/items/${id} → ${response.status()}`);
+    if (!response.ok()) throw new Error(`GET /api/catalog/items/${id} -> ${response.status()}`);
     return response.json() as Promise<CatalogItem>;
   }
 
@@ -60,7 +60,7 @@ export class CatalogApiService {
     qs.set('api-version', '1.0');
     ids.forEach(id => qs.append('ids', String(id)));
     const response = await this.request.get(`${this.baseUrl}/api/catalog/items/by?${qs.toString()}`);
-    if (!response.ok()) throw new Error(`GET /api/catalog/items/by → ${response.status()}`);
+    if (!response.ok()) throw new Error(`GET /api/catalog/items/by -> ${response.status()}`);
     return response.json() as Promise<CatalogItem[]>;
   }
 
@@ -68,7 +68,7 @@ export class CatalogApiService {
     const response = await this.request.get(`${this.baseUrl}/api/catalog/catalogtypes`, {
       params: { 'api-version': '1.0' },
     });
-    if (!response.ok()) throw new Error(`GET /api/catalog/catalogtypes → ${response.status()}`);
+    if (!response.ok()) throw new Error(`GET /api/catalog/catalogtypes -> ${response.status()}`);
     return response.json() as Promise<CatalogType[]>;
   }
 
@@ -76,40 +76,54 @@ export class CatalogApiService {
     const response = await this.request.get(`${this.baseUrl}/api/catalog/catalogbrands`, {
       params: { 'api-version': '1.0' },
     });
-    if (!response.ok()) throw new Error(`GET /api/catalog/catalogbrands → ${response.status()}`);
+    if (!response.ok()) throw new Error(`GET /api/catalog/catalogbrands -> ${response.status()}`);
     return response.json() as Promise<CatalogBrand[]>;
   }
 
-  async createItem(item: NewCatalogItem): Promise<number> {
-    // The catalog DB sequence hasn't been advanced past the seeded items (1–101).
+  async createItem(item: NewCatalogItem, maxAttempts = 3): Promise<number> {
+    // The catalog DB sequence hasn't been advanced past the seeded items (1-101).
     // Sending an explicit id in the range [10000,99999] bypasses the sequence entirely.
     // The API's CreateItem sets Id = product.Id from the JSON body.
-    const id = Math.floor(Math.random() * 90000) + 10000;
-    const response = await this.request.post(`${this.baseUrl}/api/catalog/items`, {
-      params: { 'api-version': '1.0' },
-      data: { ...item, id },
-    });
-    if (response.status() !== 201) throw new Error(`POST /api/catalog/items → ${response.status()}`);
-    const location = response.headers()['location'] ?? '';
-    const parsedId = parseInt(location.split('/').at(-1) ?? '', 10);
-    if (isNaN(parsedId)) throw new Error(`createItem: could not parse id from Location header: ${location}`);
-    return parsedId;
+    // Retry on 500: a collision with an orphaned test row is the most likely cause.
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const id = Math.floor(Math.random() * 90000) + 10000;
+      const response = await this.request.post(`${this.baseUrl}/api/catalog/items`, {
+        params: { 'api-version': '1.0' },
+        data: { ...item, id },
+      });
+      if (response.status() === 201) {
+        const location = response.headers()['location'] ?? '';
+        const parsedId = parseInt(location.split('/').at(-1) ?? '', 10);
+        if (isNaN(parsedId)) throw new Error(`createItem: could not parse id from Location header: ${location}`);
+        return parsedId;
+      }
+      if (attempt === maxAttempts) {
+        throw new Error(
+          `POST /api/catalog/items -> ${response.status()} after ${maxAttempts} attempts ` +
+          `(id collision with an orphaned test row is the likely cause)`,
+        );
+      }
+    }
+    throw new Error('createItem: unreachable');
   }
 
   async updateItem(id: number, patch: Partial<NewCatalogItem>): Promise<void> {
     const current = await this.getItem(id);
-    const merged: CatalogItem = { ...current, ...patch, id };
+    const cleanPatch = Object.fromEntries(
+      Object.entries(patch).filter(([, v]) => v !== undefined),
+    );
+    const merged: CatalogItem = { ...current, ...cleanPatch, id };
     const response = await this.request.put(`${this.baseUrl}/api/catalog/items`, {
       params: { 'api-version': '1.0' },
       data: merged,
     });
-    if (response.status() !== 201) throw new Error(`PUT /api/catalog/items → ${response.status()}`);
+    if (response.status() !== 201) throw new Error(`PUT /api/catalog/items -> ${response.status()}`);
   }
 
   async deleteItem(id: number): Promise<void> {
     const response = await this.request.delete(`${this.baseUrl}/api/catalog/items/${id}`, {
       params: { 'api-version': '1.0' },
     });
-    if (!response.ok()) throw new Error(`DELETE /api/catalog/items/${id} → ${response.status()}`);
+    if (!response.ok()) throw new Error(`DELETE /api/catalog/items/${id} -> ${response.status()}`);
   }
 }

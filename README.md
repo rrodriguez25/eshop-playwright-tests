@@ -14,11 +14,11 @@ and in CI.
 
 | Folder | Purpose |
 | --- | --- |
-| `src/pages` | Page objects. Each page owns its locators and actions; tests never touch raw selectors. |
-| `src/api` | Typed API clients, used for API tests and for setting up test data without the UI. |
-| `src/fixtures` | Custom Playwright fixtures that hand page objects and API clients to tests. |
-| `src/data` | Test data helpers. Every test creates its own uniquely named data, so tests run in parallel safely. |
-| `src/config` | Environment configuration, read from `.env` locally and from variables in CI. |
+| `pages/` | Page objects. Each page owns its locators and actions; tests never touch raw selectors. |
+| `api/` | Typed API service classes and generated OpenAPI types (`api/generated/`). Run `pnpm generate:api-types` to regenerate from live specs. |
+| `fixtures/` | Custom Playwright fixtures that hand page objects and API service instances to tests. |
+| `helpers/` | Test data utilities (e.g. `uniqueName`). Every test creates its own uniquely named data so tests run in parallel safely. |
+| `config/` | Environment configuration, read from `.env` locally and from variables in CI. |
 | `tests/ui` | Browser tests (Chromium project). |
 | `tests/api` | API tests (no browser). |
 
