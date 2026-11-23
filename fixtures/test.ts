@@ -1,14 +1,19 @@
 import { test as base, expect } from '@playwright/test';
 import { ApiClient } from '../api/ApiClient';
+import { CatalogApiService } from '../api/CatalogApiService';
 import { env } from '../config/env';
 import { HomePage } from '../pages/HomePage';
 
-type Fixtures = {
+type TestFixtures = {
   homePage: HomePage;
   api: ApiClient;
 };
 
-export const test = base.extend<Fixtures>({
+type WorkerFixtures = {
+  catalog: CatalogApiService;
+};
+
+export const test = base.extend<TestFixtures, WorkerFixtures>({
   homePage: async ({ page }, use) => {
     await use(new HomePage(page));
   },
@@ -20,6 +25,14 @@ export const test = base.extend<Fixtures>({
     await use(new ApiClient(context));
     await context.dispose();
   },
+  catalog: [async ({ playwright }, use) => {
+    const ctx = await playwright.request.newContext({
+      baseURL: env.catalogApiUrl,
+      ignoreHTTPSErrors: true,
+    });
+    await use(new CatalogApiService(ctx, env.catalogApiUrl));
+    await ctx.dispose();
+  }, { scope: 'worker' }],
 });
 
 export { expect };
