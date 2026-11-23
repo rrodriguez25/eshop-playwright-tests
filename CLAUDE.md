@@ -23,10 +23,15 @@ read it before changing anything.
 
 ## Structure
 
-- `pages/`: page objects. `api/`: API clients and generated types. `fixtures/test.ts`: the
-  `test` and `expect` every spec imports. `helpers/`: test data utilities. `config/`:
-  environment. `db/`: database seeding (future).
-- `tests/ui` runs in the `chromium` project, `tests/api` in the `api` project.
+- `pages/`: page objects. `api/`: API clients and generated types. `db/`: PostgreSQL access
+  (`DbClient` with one pool per eShop database, `Database` with `query`, `queryOne`, `execute`,
+  `transaction`). `fixtures/test.ts`: the `test` and `expect` every spec imports, including the
+  worker-scoped `db` fixture. `config/`: environment.
+- `helpers/` is split by layer: `setup/` (test data utilities such as `uniqueName`), `api/`
+  (built on `api/` services), `ui/` (built on page objects), `db/` (queries built on `db/`).
+  Specs call helpers; only `helpers/db` writes SQL. Always pass values as `$1` parameters.
+- `tests/ui` runs in the `chromium` project, `tests/api` in `api`, `tests/db` in `db`
+  (`pnpm test:db`). Database tests need `DB_PORT` and `DB_PASSWORD` in `.env`.
 - Specs import `test` and `expect` from `fixtures/test`, never from `@playwright/test`.
 
 ## Skills

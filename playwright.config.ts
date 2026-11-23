@@ -22,6 +22,10 @@ export default defineConfig({
       testDir: './tests/api',
     },
     {
+      name: 'db',
+      testDir: './tests/db',
+    },
+    {
       name: 'chromium',
       testDir: './tests/ui',
       use: { ...devices['Desktop Chrome'] },

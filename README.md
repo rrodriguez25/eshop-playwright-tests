@@ -16,11 +16,14 @@ and in CI.
 | --- | --- |
 | `pages/` | Page objects. Each page owns its locators and actions; tests never touch raw selectors. |
 | `api/` | Typed API service classes and generated OpenAPI types (`api/generated/`). Run `pnpm generate:api-types` to regenerate from live specs. |
-| `fixtures/` | Custom Playwright fixtures that hand page objects and API service instances to tests. |
-| `helpers/` | Test data utilities (e.g. `uniqueName`). Every test creates its own uniquely named data so tests run in parallel safely. |
+| `db/` | PostgreSQL access: `DbClient` opens a connection pool per eShop database on first use; each `Database` runs parameterized queries and transactions. |
+| `fixtures/` | Custom Playwright fixtures that hand page objects, API services and the `db` client to tests. |
+| `helpers/setup` | Test data utilities (e.g. `uniqueName`). Every test creates its own uniquely named data so tests run in parallel safely. |
+| `helpers/api`, `helpers/ui`, `helpers/db` | Reusable steps built on the API services, page objects and database layer. Only `helpers/db` contains SQL. |
 | `config/` | Environment configuration, read from `.env` locally and from variables in CI. |
 | `tests/ui` | Browser tests (Chromium project). |
 | `tests/api` | API tests (no browser). |
+| `tests/db` | Database tests, including a sanity check that each eShop database is reachable and readable. |
 
 ## Getting started
 
@@ -75,6 +78,9 @@ docker exec -it <container> sh -c 'PGPASSWORD="$POSTGRES_PASSWORD" psql -U postg
 From a GUI client (for example Microsoft's PostgreSQL extension for VS Code), connect to
 `127.0.0.1` on the host port above as user `postgres`, with SSL disabled.
 
+The database tests read the same values from `.env`: set `DB_PORT` to the host port and
+`DB_PASSWORD` to the password. Both change if the PostgreSQL container is recreated.
+
 ### Run the tests
 
 ```powershell
@@ -89,6 +95,7 @@ The defaults in `.env.example` match the URLs above. Then:
 pnpm test            # everything
 pnpm test:ui         # browser tests
 pnpm test:api        # API tests
+pnpm test:db         # database tests
 pnpm report          # open the HTML report
 ```
 

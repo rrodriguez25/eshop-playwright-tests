@@ -12,6 +12,7 @@
     "test": "playwright test",
     "test:ui": "playwright test --project=chromium",
     "test:api": "playwright test --project=api",
+    "test:db": "playwright test --project=db",
     "test:headed": "playwright test --project=chromium --headed",
     "typecheck": "tsc --noEmit",
     "report": "playwright show-report",
@@ -20,7 +21,9 @@
   "devDependencies": {
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.2",
+    "@types/pg": "^8.23.1",
     "openapi-typescript": "^7.13.0",
+    "pg": "^8.23.1",
     "typescript": "^5.7.2"
   }
 }

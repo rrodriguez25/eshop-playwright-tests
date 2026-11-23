@@ -3,6 +3,7 @@ import { ApiClient } from '../api/ApiClient';
 import { CatalogApiService } from '../api/CatalogApiService';
 import { OrderingApiService } from '../api/OrderingApiService';
 import { env } from '../config/env';
+import { DbClient } from '../db/DbClient';
 import { HomePage } from '../pages/HomePage';
 
 type TestFixtures = {
@@ -13,6 +14,7 @@ type TestFixtures = {
 type WorkerFixtures = {
   catalog: CatalogApiService;
   ordering: OrderingApiService;
+  db: DbClient;
 };
 
 export const test = base.extend<TestFixtures, WorkerFixtures>({
@@ -42,6 +44,11 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     });
     await use(new OrderingApiService(ctx, env.orderingApiUrl));
     await ctx.dispose();
+  }, { scope: 'worker' }],
+  db: [async ({}, use) => {
+    const client = new DbClient(env.db);
+    await use(client);
+    await client.close();
   }, { scope: 'worker' }],
 });
 
