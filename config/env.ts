@@ -15,4 +15,6 @@ function required(name: string): string {
 export const env = {
   baseUrl: required('BASE_URL'),
   apiUrl: process.env.API_URL ?? required('BASE_URL'),
+  catalogApiUrl: process.env.API_CATALOG_URL ?? 'http://localhost:5222',
+  orderingApiUrl: process.env.API_ORDERING_URL ?? 'http://localhost:5224',
 };
