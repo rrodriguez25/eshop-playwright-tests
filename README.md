@@ -112,3 +112,11 @@ pnpm report          # open the HTML report
 
 eShop is © Microsoft and the .NET Foundation, released under the MIT license. This repository
 contains only tests; it does not include or modify eShop's source.
+
+## License
+
+Copyright © 2026 Raciel Rodriguez. All rights reserved.
+
+This repository is public so its work can be viewed. No license is granted to copy, modify,
+distribute or reuse any part of it, including the code, documentation and AI skills, without
+written permission.
