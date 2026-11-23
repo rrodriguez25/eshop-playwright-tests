@@ -1,4 +1,4 @@
-import { expect, test } from '../../src/fixtures/test';
+import { expect, test } from '../../fixtures/test';
 
 test.describe('Home page', { tag: '@smoke' }, () => {
   test('loads successfully', async ({ homePage, page }) => {

@@ -23,10 +23,11 @@ read it before changing anything.
 
 ## Structure
 
-- `src/pages`: page objects. `src/api`: API clients. `src/fixtures/test.ts`: the `test` and
-  `expect` every spec imports. `src/data`: test data helpers. `src/config`: environment.
+- `pages/`: page objects. `api/`: API clients and generated types. `fixtures/test.ts`: the
+  `test` and `expect` every spec imports. `helpers/`: test data utilities. `config/`:
+  environment. `db/`: database seeding (future).
 - `tests/ui` runs in the `chromium` project, `tests/api` in the `api` project.
-- Specs import `test` and `expect` from `src/fixtures/test`, never from `@playwright/test`.
+- Specs import `test` and `expect` from `fixtures/test`, never from `@playwright/test`.
 
 ## Skills
 

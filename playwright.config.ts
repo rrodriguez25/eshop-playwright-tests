@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { env } from './src/config/env';
+import { env } from './config/env';
 
 const isCI = !!process.env.CI;
 
