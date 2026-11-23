@@ -14,11 +14,13 @@
     "test:api": "playwright test --project=api",
     "test:headed": "playwright test --project=chromium --headed",
     "typecheck": "tsc --noEmit",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "generate:api-types": "openapi-typescript http://localhost:5222/openapi/v1.json -o api/generated/catalog.ts && openapi-typescript http://localhost:5224/openapi/v1.json -o api/generated/ordering.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.2",
+    "openapi-typescript": "^7.13.0",
     "typescript": "^5.7.2"
   }
 }
