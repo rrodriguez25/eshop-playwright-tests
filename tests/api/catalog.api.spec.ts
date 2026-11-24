@@ -1,6 +1,6 @@
 import { test, expect } from '../../fixtures/test';
-import { uniqueName } from '../../helpers/setup/unique';
 import type { NewCatalogItem } from '../../api/CatalogApiService';
+import { createCatalogItem } from '../../helpers/api/catalog';
 
 test.describe('Catalog API', () => {
 
@@ -80,59 +80,40 @@ test.describe('Catalog API', () => {
     });
   });
 
-  test.describe('POST + DELETE /api/catalog/items — test data lifecycle', () => {
-    test.describe.configure({ mode: 'serial' });
-    let createdId: number | undefined;
-    const itemName = uniqueName('test-item');
-    let typeId: number;
-    let brandId: number;
-
-    test.beforeAll(async ({ catalog }) => {
-      const types = await catalog.getTypes();
-      const brands = await catalog.getBrands();
-      typeId = Number(types[0]!.id);
-      brandId = Number(brands[0]!.id);
-      const newItem: NewCatalogItem = {
-        name: itemName,
-        description: 'Created by automated test',
-        price: 9.99,
-        catalogTypeId: typeId,
-        catalogBrandId: brandId,
-        availableStock: 10,
-        restockThreshold: 2,
-        maxStockThreshold: 50,
-      };
-      createdId = await catalog.createItem(newItem);
+  test.describe('POST, PUT and DELETE /api/catalog/items', () => {
+    test('createItem returns a positive integer id', ({ catalogItem }) => {
+      expect(catalogItem.id).toBeGreaterThan(0);
     });
 
-    test.afterAll(async ({ catalog }) => {
-      if (createdId !== undefined) {
-        await catalog.deleteItem(createdId);
-      }
+    test('created item is fetchable by id', async ({ catalog, catalogItem }) => {
+      const item = await catalog.getItem(catalogItem.id);
+
+      expect(item.name).toBe(catalogItem.name);
+      expect(item.price).toBe(catalogItem.price);
     });
 
-    test('createItem returns a positive integer id', () => {
-      expect(createdId).toBeGreaterThan(0);
-    });
+    test('updateItem changes a field on the item', async ({ catalog, catalogItem }) => {
+      await catalog.updateItem(catalogItem.id, { price: 19.99 });
 
-    test('created item is fetchable by id', async ({ catalog }) => {
-      const item = await catalog.getItem(createdId!);
-      expect(item.name).toBe(itemName);
-      expect(item.price).toBe(9.99);
-    });
-
-    test('updateItem changes a field on the item', async ({ catalog }) => {
-      await catalog.updateItem(createdId!, { price: 19.99 });
-      const updated = await catalog.getItem(createdId!);
+      const updated = await catalog.getItem(catalogItem.id);
       expect(updated.price).toBe(19.99);
     });
 
-    test('updateItem does not wipe fields when patch has explicit undefined', async ({ catalog }) => {
-      const before = await catalog.getItem(createdId!);
+    test('updateItem does not wipe fields when patch has explicit undefined', async ({ catalog, catalogItem }) => {
       const patch = { description: 'explicit-patch-only', price: undefined } as Partial<NewCatalogItem>;
-      await catalog.updateItem(createdId!, patch);
-      const after = await catalog.getItem(createdId!);
-      expect(Number(after.price)).toBe(Number(before.price));
+
+      await catalog.updateItem(catalogItem.id, patch);
+
+      const after = await catalog.getItem(catalogItem.id);
+      expect(Number(after.price)).toBe(catalogItem.price);
+    });
+
+    test('deleteItem removes the item', async ({ catalog }) => {
+      const { id } = await createCatalogItem(catalog);
+
+      await catalog.deleteItem(id);
+
+      await expect(catalog.getItem(id)).rejects.toThrow(/-> 404/);
     });
   });
 

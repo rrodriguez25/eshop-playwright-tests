@@ -4,11 +4,14 @@ import { CatalogApiService } from '../api/CatalogApiService';
 import { OrderingApiService } from '../api/OrderingApiService';
 import { env } from '../config/env';
 import { DbClient } from '../db/DbClient';
+import { createCatalogItem, type CreatedCatalogItem } from '../helpers/api/catalog';
 import { HomePage } from '../pages/HomePage';
 
 type TestFixtures = {
   homePage: HomePage;
   api: ApiClient;
+  /** A uniquely named catalog item created for this test and deleted after it. */
+  catalogItem: CreatedCatalogItem;
 };
 
 type WorkerFixtures = {
@@ -28,6 +31,11 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     });
     await use(new ApiClient(context));
     await context.dispose();
+  },
+  catalogItem: async ({ catalog }, use) => {
+    const item = await createCatalogItem(catalog);
+    await use(item);
+    await catalog.deleteItem(item.id);
   },
   catalog: [async ({ playwright }, use) => {
     const ctx = await playwright.request.newContext({

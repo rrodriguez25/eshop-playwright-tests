@@ -122,8 +122,24 @@ export class ProductPage extends BasePage {
 - Seeded eShop data is read-only: read it freely, never modify or delete it. Why: other tests and
   local use of the app depend on it.
 - Clean up what you create, preferably in a fixture's teardown; `afterAll` is the fallback.
-- Serial mode is only for a lifecycle test of one resource (create, read, update, delete), with a
-  comment saying so. Why: anything else serial is hiding shared state between tests.
+- Everything runs fully parallel, lifecycle tests included. Each test creates its own resource
+  through a fixture, or covers a multi-step flow in one test with `test.step()`. Never chain
+  tests that depend on each other.
+- Serial mode is only for a conflict that isolated test data can't prevent:
+  - a background process that updates many records at once (such as eShop's ordering job that
+    moves every order past its grace period)
+  - a resource that can't be duplicated per test, such as a user's basket when tests share one of
+    the few seeded users
+  - assertions on system-wide state (totals, first page of results) that can't be filtered to the
+    test's own data
+  - a system-wide setting or feature toggle a test has to change
+  - external limits: rate limits, quotas, a fixed pool of accounts
+  - a fixed value the test must use that the system allows only once
+
+  Every serial `describe` states its conflict in a comment. Why: serial hides failures (one
+  failing test skips the rest) and slows the suite, so it must be justified.
+- Serial mode only orders tests within one file; other files keep running in other workers. When
+  the conflict spans files, move those tests to their own project with `workers: 1` instead.
 - Login state is created once and reused through `storageState`.
 
 ## 9. Spec structure
