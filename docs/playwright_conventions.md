@@ -22,7 +22,7 @@ tests/  ──►  helpers/  ──►  pages/   api/   db/  ──►  eShop (b
 | `tests/ui`, `tests/api`, `tests/db` | Specs: what is tested and what is expected. | Fixtures, helpers, page objects, API services |
 | `helpers/setup` | Test data utilities (`uniqueName`, builders). | Nothing eShop-specific |
 | `helpers/ui`, `helpers/api`, `helpers/db` | Reusable multi-step actions and queries. | Page objects, API services, `db/` |
-| `pages/` | Page objects: locators and actions for one page. | `Page` only |
+| `pages/` | Page objects: locators, actions and verifications for one page. | `@playwright/test` and other page objects |
 | `api/` | One typed service class per eShop API, plus generated types. | `APIRequestContext` only |
 | `db/` | Connections, queries, transactions. No eShop table knowledge. | `pg` only |
 | `fixtures/test.ts` | The `test` and `expect` every spec imports. | Everything above |
@@ -61,33 +61,65 @@ Use the first option that works:
 
 - Web-first assertions only: `await expect(locator).toBeVisible()`, never
   `expect(await locator.isVisible()).toBe(true)`.
-- No `page.waitForTimeout` or fixed sleeps. Wait for a locator state, URL, response or value.
+- No `page.waitForTimeout`, fixed sleeps or `waitForLoadState('networkidle')`. Rely on
+  auto-waiting, or wait for a locator state, URL, response or value.
 - eShop finishes some work in the background: orders move between services through RabbitMQ, so
   their database rows and statuses appear after the request returns. Poll for those outcomes with
   `expect.poll` or `expect(...).toPass()` and an explicit timeout.
 - Assert the outcome a user or caller observes, not intermediate steps.
 - Add a message to an assertion when the failure wouldn't be obvious.
-- Page objects don't assert expected outcomes; specs do. A page object may wait for its own page to
-  be ready as part of an action. Why: specs stay the single place that defines "correct".
+- Checks reused across specs live in page objects as `verify<Something>()` methods; the spec
+  decides which checks a test makes.
 
 ## 5. Page objects
 
 - One class per page or distinct component: `pages/<Name>Page.ts`, extending `BasePage` with the
   page's path.
-- Actions are named after what a user does (`addToBag()`, `checkout()`).
+- Every page object defines `readyIndicator`: an element only that page shows once it has
+  rendered, usually its main heading. `BasePage` uses it in `verifyPageIsOpen()`.
+- Every page object has `goto()` and `verifyPageIsOpen()`, inherited from `BasePage`.
+  `verifyPageIsOpen()` asserts the URL path and the ready indicator. Call it after navigating,
+  including after an action that lands on another page.
+- Locators are declared `readonly` at the top of the class and assigned in the constructor.
+- Methods are for multi-step actions and for verifications. No method that wraps a single action:
+  specs use the locator directly (`await productPage.addToBagButton.click()`).
+- Actions are named after what a user does (`placeOrder()`), verifications start with `verify`.
+- Wrap each method's body in `test.step()` named after the user's intent. Include the arguments in
+  the step name when there are fewer than three, so the report shows what was used.
 - An action that navigates to another page returns that page's object.
 - Register each page object as a fixture in `fixtures/test.ts`; specs receive it, never construct it.
 
 ```ts
-export class ProductPage extends BasePage {
-  readonly addToBagButton = this.page.getByRole('button', { name: 'Add to shopping bag' });
+export class CheckoutPage extends BasePage {
+  protected readonly readyIndicator: Locator;
+  readonly addressInput: Locator;
+  readonly cityInput: Locator;
+  readonly placeOrderButton: Locator;
 
-  constructor(page: Page, itemId: number) {
-    super(page, `/item/${itemId}`);
+  constructor(page: Page) {
+    super(page, '/checkout');
+    this.readyIndicator = page.getByRole('heading', { name: 'Checkout' });
+    this.addressInput = page.getByLabel('Address');
+    this.cityInput = page.getByLabel('City');
+    this.placeOrderButton = page.getByRole('button', { name: 'Place order' });
   }
 
-  async addToBag(): Promise<void> {
-    await this.addToBagButton.click();
+  async placeOrder(address: string, city: string): Promise<OrdersPage> {
+    return test.step(`Place order shipping to ${address}, ${city}`, async () => {
+      await this.addressInput.fill(address);
+      await this.cityInput.fill(city);
+      await this.placeOrderButton.click();
+      const ordersPage = new OrdersPage(this.page);
+      await ordersPage.verifyPageIsOpen();
+      return ordersPage;
+    });
+  }
+
+  async verifyShippingAddress(address: string, city: string): Promise<void> {
+    await test.step(`Verify shipping address is ${address}, ${city}`, async () => {
+      await expect(this.addressInput).toHaveValue(address);
+      await expect(this.cityInput).toHaveValue(city);
+    });
   }
 }
 ```
@@ -119,12 +151,15 @@ export class ProductPage extends BasePage {
 
 - Every test creates the data it changes, named with `uniqueName('prefix')`. Why: tests run fully
   parallel (`fullyParallel: true`) and in any order, against one shared eShop instance.
+- Use descriptive prefixes (`uniqueName('checkout-address')`, not `uniqueName('x')`) and realistic
+  values (a real-looking street and city, a sensible price), so failures and leftover rows are
+  easy to read.
 - Seeded eShop data is read-only: read it freely, never modify or delete it. Why: other tests and
   local use of the app depend on it.
 - Clean up what you create, preferably in a fixture's teardown; `afterAll` is the fallback.
 - Everything runs fully parallel, lifecycle tests included. Each test creates its own resource
-  through a fixture, or covers a multi-step flow in one test with `test.step()`. Never chain
-  tests that depend on each other.
+  through a fixture, or covers a multi-step flow in one test. Never chain tests that depend on
+  each other.
 - Serial mode is only for a conflict that isolated test data can't prevent:
   - a background process that updates many records at once (such as eShop's ordering job that
     moves every order past its grace period)
@@ -148,7 +183,12 @@ export class ProductPage extends BasePage {
 - Test names state the behavior and its result: `'filters by name prefix'`,
   `'returns 401 without token'`.
 - One behavior per test.
-- Arrange, act, assert, separated by blank lines. Use `test.step()` in long UI journeys.
+- Arrange, act, assert, separated by blank lines.
+- No `test.step()` in specs. Steps live inside page object and helper methods, so a spec stays a
+  short list of intent-named calls and the report still shows each step.
+- Use `beforeEach` for navigation or setup shared by every test in a `describe`. Data a test
+  needs comes from fixtures, not hooks.
+- Comments only for logic that isn't obvious from the names.
 - Tags go on the `describe` (`{ tag: '@smoke' }`), not in the title. `@smoke` marks the fast checks
   that prove the system is up.
 - No `test.only`. `test.skip` and `test.fixme` include a reason.
