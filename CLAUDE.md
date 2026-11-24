@@ -34,7 +34,15 @@ read it before changing anything.
   (`pnpm test:db`). Database tests need `DB_PORT` and `DB_PASSWORD` in `.env`.
 - Specs import `test` and `expect` from `fixtures/test`, never from `@playwright/test`.
 
+## Conventions
+
+Follow `docs/playwright_conventions.md` for every test, page object, service and helper. It is
+imported below so it is always in context:
+
+@docs/playwright_conventions.md
+
 ## Skills
 
 Project skills live in `.claude/skills/<name>/SKILL.md`. They are being written one at a time,
-alongside the tests that use them.
+alongside the tests that use them. Skills describe how to do a task and point to the
+conventions above; they never restate or override them.

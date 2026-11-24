@@ -99,6 +99,12 @@ pnpm test:db         # database tests
 pnpm report          # open the HTML report
 ```
 
+## Conventions
+
+[`docs/playwright_conventions.md`](docs/playwright_conventions.md) defines how tests are written
+here: the layers and what each may use, locator and assertion rules, test data isolation for
+parallel runs, naming, and the checks before a commit. Every rule includes its reason.
+
 ## Roadmap
 
 - [x] Project structure, fixtures, smoke tests

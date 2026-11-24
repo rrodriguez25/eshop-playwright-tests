@@ -1,7 +1,8 @@
 import { test, expect } from '../../fixtures/test';
 import type { DatabaseKey } from '../../db/DbClient';
 import { DATABASES } from '../../db/DbClient';
-import { countRows, currentDatabase, migrationCount } from '../../helpers/db/health';
+import { countRows, currentDatabase, migrationCount, probeWrite } from '../../helpers/db/health';
+import { uniqueName } from '../../helpers/setup/unique';
 
 /** For each database, a table eShop always fills on startup, or none if it starts empty. */
 const seededTables: Record<DatabaseKey, { schema: string; table: string } | undefined> = {
@@ -27,14 +28,10 @@ test.describe('Database sanity', () => {
   }
 
   test('writes and reads back inside a transaction that rolls back', async ({ db }) => {
-    const marker = 'sanity-write';
-    const rollback = new Error('roll back');
+    const value = uniqueName('write-probe');
 
-    await expect(db.catalog.transaction(async tx => {
-      await tx.execute('create temp table sanity_check (value text) on commit drop');
-      expect(await tx.execute('insert into sanity_check (value) values ($1)', [marker])).toBe(1);
-      expect(await tx.queryOne<{ value: string }>('select value from sanity_check')).toEqual({ value: marker });
-      throw rollback;
-    })).rejects.toBe(rollback);
+    const result = await probeWrite(db.catalog, value);
+
+    expect(result).toEqual({ inserted: 1, readBack: value });
   });
 });
