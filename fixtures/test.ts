@@ -2,6 +2,7 @@ import { test as base, expect } from '@playwright/test';
 import { ApiClient } from '../api/api-client';
 import { CatalogApiService } from '../api/catalog-api-service';
 import { OrderingApiService } from '../api/ordering-api-service';
+import { IdentityClient } from '../auth/identity-client';
 import { env } from '../config/env';
 import { DbClient } from '../db/db-client';
 import { createCatalogItem, type CreatedCatalogItem } from '../helpers/api/catalog';
@@ -21,6 +22,8 @@ type WorkerFixtures = {
   catalog: CatalogApiService;
   ordering: OrderingApiService;
   db: DbClient;
+  /** Logs users in to eShop's web app over HTTP. */
+  identity: IdentityClient;
 };
 
 export const test = base.extend<TestFixtures, WorkerFixtures>({
@@ -45,6 +48,9 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     const client = new DbClient(env.db);
     await use(client);
     await client.close();
+  }, { scope: 'worker' }],
+  identity: [async ({ playwright }, use) => {
+    await use(new IdentityClient(playwright.request, env.baseUrl));
   }, { scope: 'worker' }],
 });
 
