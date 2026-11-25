@@ -52,15 +52,20 @@ Where a new helper goes, first match wins:
 | `helpers/db/` | Queries and writes on eShop's databases | API calls, browser steps |
 | `helpers/api/` | Multi-call API flows, typed builders of API payloads | SQL, browser steps |
 | `helpers/ui/` | Flows spanning several page objects, request and response matchers | SQL, API calls |
-| `helpers/` root | Utilities usable in any project | Anything that knows about eShop |
+| `helpers/` root | Utilities usable in any project: `function-helper.ts` (general functions), `retry-helper.ts` (retrying and polling) | Anything that knows about eShop |
 
 - Keep database and API work separate. If a helper would do both, write one in `helpers/db/` and
   one in `helpers/api/` when each is useful alone. Only an indivisible operation combines them,
   and that is setup, so it goes in `helpers/setup/`.
 - A single page's actions belong in its page object, not in `helpers/ui/`. `helpers/ui/` is for
   flows that span pages.
+- Extract logic into a shared function once it appears in three or more places (specs, helpers
+  or page objects). Two copies stay inline. Why: extracting earlier guesses at an abstraction
+  before the cases show what it should be.
+- Before writing a utility, check `function-helper.ts` and `retry-helper.ts`; add to them rather
+  than creating another general-purpose file.
 - Name files by feature (`helpers/db/catalog.ts`); the folder already says the type, so no
-  `-db-helper` suffix.
+  `-db-helper` suffix. The two root files are the exception, named for what they hold.
 - Folders stay flat. Add a feature subfolder (`helpers/ui/checkout/`) only when one feature has
   several helpers in the same folder.
 
