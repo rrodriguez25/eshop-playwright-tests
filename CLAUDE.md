@@ -45,6 +45,8 @@ imported below so it is always in context:
 
 ## Skills
 
-Project skills live in `.claude/skills/<name>/SKILL.md`. They are being written one at a time,
-alongside the tests that use them. Skills describe how to do a task and point to the
-conventions above; they never restate or override them.
+Project skills live in `.claude/skills/<name>/SKILL.md` and agents in `.claude/agents/<name>.md`.
+`docs/ai-workflow.md` describes the plan: which skills and agents exist or are planned, what each
+may do, and how page objects are mapped from eShop's source and the live page. Skills are written
+one at a time from real work. They describe how to do a task and point to the conventions above;
+they never restate or override them.

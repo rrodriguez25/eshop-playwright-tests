@@ -109,6 +109,13 @@ here: the layers and what each may use, locator and assertion rules, test data i
 parallel runs, naming, and the checks before a commit. Rules specific to this project include
 their reason.
 
+## AI workflow
+
+[`docs/ai-workflow.md`](docs/ai-workflow.md) describes how AI agents write and maintain the suite:
+conventions as the rules, small single-purpose skills as the procedures, and agents as roles with
+limited permissions, from scenario discovery through review. Page objects are mapped from eShop's
+source code and confirmed against the live page.
+
 ## Roadmap
 
 - [x] Project structure, fixtures, smoke tests

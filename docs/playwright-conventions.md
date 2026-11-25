@@ -91,9 +91,14 @@ Use the first option that works:
 - Use `exact: true` when one name is a prefix of another (`'Orders'` vs `'Orders history'`).
 - Narrow with `filter({ hasText })` or a parent locator rather than `.first()` or `.nth()`.
 - Locators live in page objects.
-- Take locators and screen text from the live page, never from memory or guesses. Agents open
-  the page with the Playwright MCP server (`.mcp.json`) and read its accessibility snapshot;
-  people can use `pnpm exec playwright codegen https://localhost:7298`.
+- Map page objects from eShop's source and the live page, never from memory or guesses. The
+  page's `.razor` source says what exists, including elements that only render for some users,
+  data or states; the live page (Playwright MCP snapshot, or `pnpm exec playwright codegen
+  https://localhost:7298`) says how to locate it. Why: a live snapshot shows one state at a time,
+  so mapping from it alone misses whole parts of a page.
+- An element mapped from the source but not yet seen live gets a comment starting
+  `// Unverified:` with the file and the condition it renders under. Remove it once a test has
+  confirmed the locator on the live page. Full procedure: `docs/ai-workflow.md`.
 
 ## 4. Assertions and waiting
 
