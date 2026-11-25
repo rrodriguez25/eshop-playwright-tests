@@ -1,8 +1,9 @@
 import { existsSync } from 'node:fs';
 import type { DbConfig } from '../db/db-client';
+import { ENV_FILE } from './paths';
 
-if (existsSync('.env')) {
-  process.loadEnvFile('.env');
+if (existsSync(ENV_FILE)) {
+  process.loadEnvFile(ENV_FILE);
 }
 
 function required(name: string): string {

@@ -5,15 +5,13 @@ import { OrderingApiService } from '../api/ordering-api-service';
 import { IdentityClient, type Credentials } from '../auth/identity-client';
 import { SessionStore } from '../auth/session-store';
 import { env } from '../config/env';
+import { SESSION_DIR } from '../config/paths';
 import { DbClient } from '../db/db-client';
 import { createCatalogItem, type CreatedCatalogItem } from '../helpers/api/catalog';
 import { staticUser, type StaticUserKey } from '../helpers/setup/static-users';
 import { HomePage } from '../pages/home-page';
 import { ItemPage } from '../pages/item-page';
 import { apiServiceFixture, pageFixture } from './factory';
-
-/** Where each worker saves its logged-in sessions. Ignored by git. */
-const SESSION_DIR = '.auth';
 
 type TestFixtures = {
   homePage: HomePage;

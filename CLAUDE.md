@@ -29,8 +29,9 @@ read it before changing anything.
 - `pages/`: page objects. `api/`: API clients and generated types. `db/`: PostgreSQL access
   (`DbClient` with one pool per eShop database, `Database` with `query`, `queryOne`, `execute`,
   `transaction`). `fixtures/test.ts`: the `test` and `expect` every spec imports, including the
-  worker-scoped `db` fixture. `config/`: environment. `auth/`: logs users in to Identity over HTTP
-  and keeps one session per user per worker. `data/`: static test data (`users.json`).
+  worker-scoped `db` fixture. `config/`: environment (`env.ts`) and repo-root paths (`paths.ts`).
+  `auth/`: logs users in to Identity over HTTP and keeps one session per user per worker.
+  `data/`: static test data (`users.json`).
 - `helpers/`: `setup/`, `db/`, `api/`, `ui/` and general utilities at the root. Where a new
   helper goes is decided by the Helpers section of the conventions.
 - `tests/ui` runs in the `chromium` project, `tests/api` in `api`, `tests/db` in `db`
