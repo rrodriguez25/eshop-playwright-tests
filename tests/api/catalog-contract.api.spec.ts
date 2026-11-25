@@ -50,14 +50,10 @@ test.describe('Catalog API contract', { tag: '@contract' }, () => {
     });
 
     test('GET /items/{id} for a missing item returns the documented 404', async ({ catalog }) => {
-      test.fail(true, 'eShop bug: the 404 has an application/problem+json body the contract does not document');
-
       await expect(catalog.getItem(999_999_999)).rejects.toThrow('GET /api/catalog/items/999999999 -> 404');
     });
 
     test('DELETE /items/{id} for a missing item returns the documented 404', async ({ catalog }) => {
-      test.fail(true, 'eShop bug: the 404 has an application/problem+json body the contract does not document');
-
       await expect(catalog.deleteItem(999_999_999)).rejects.toThrow('DELETE /api/catalog/items/999999999 -> 404');
     });
 
@@ -103,8 +99,19 @@ test.describe('Contract validator', { tag: '@contract' }, () => {
     expect(check(500, {})).toThrow('status is not in the contract');
   });
 
-  test('rejects a body where the contract documents none', () => {
-    expect(check(404, { title: 'Not Found' }, 'application/problem+json')).toThrow('the contract documents none');
+  test('accepts a problem details body on an error the contract documents without a body', () => {
+    const problem = { type: 'https://tools.ietf.org/html/rfc9110#section-15.5.5', title: 'Not Found', status: 404, traceId: '00-1' };
+
+    expect(check(404, problem, 'application/problem+json')).not.toThrow();
+  });
+
+  test('rejects a malformed problem details body', () => {
+    expect(check(404, { title: 'Not Found', status: 500 }, 'application/problem+json')).toThrow('reports status 500');
+    expect(check(404, { title: 42 }, 'application/problem+json')).toThrow('/title must be string');
+  });
+
+  test('rejects any other body where the contract documents none', () => {
+    expect(check(404, { error: 'missing' })).toThrow('the contract documents none');
   });
 
   test('rejects an undocumented content type', () => {

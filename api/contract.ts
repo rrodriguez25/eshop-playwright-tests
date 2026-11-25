@@ -34,6 +34,9 @@ export class ContractError extends Error {
  *   yet always serializes every property);
  * - a number typed as "number or numeric string" must be a number (ASP.NET documents that it
  *   accepts strings on input; responses always send numbers).
+ *
+ * One rule loosens them: an error response whose contract documents no body may carry a
+ * well-formed problem details body, which ASP.NET adds on its own (see `checkProblemDetails`).
  */
 export class ContractValidator {
   private readonly ajv = new Ajv2020({ allErrors: true, strict: false });
@@ -70,15 +73,17 @@ export class ContractValidator {
       throw new ContractError(`${where}: status is not in the contract (documented: ${Object.keys(responses).join(', ')})`);
     }
 
+    const mediaType = (contentType ?? '').split(';')[0]!.trim().toLowerCase();
     const content = documented.content ?? {};
     if (Object.keys(content).length === 0) {
-      if (body.trim() !== '') {
-        throw new ContractError(`${where}: returned a body (${contentType ?? 'no content type'}), but the contract documents none`);
+      if (body.trim() === '') return;
+      if (status >= 400 && mediaType === 'application/problem+json') {
+        this.checkProblemDetails(where, status, body);
+        return;
       }
-      return;
+      throw new ContractError(`${where}: returned a body (${contentType ?? 'no content type'}), but the contract documents none`);
     }
 
-    const mediaType = (contentType ?? '').split(';')[0]!.trim().toLowerCase();
     const schema = content[mediaType]?.schema;
     if (!content[mediaType]) {
       throw new ContractError(`${where}: content type "${mediaType}" is not in the contract (documented: ${Object.keys(content).join(', ')})`);
@@ -101,6 +106,29 @@ export class ContractValidator {
     }
   }
 
+  /**
+   * ASP.NET adds an RFC 9457 problem details body to error responses on its own, so its generated
+   * documents leave that body out. Accept it on any error status, as long as it is well formed and
+   * its `status` matches the HTTP status.
+   */
+  private checkProblemDetails(where: string, status: number, body: string): void {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(body);
+    } catch {
+      throw new ContractError(`${where}: problem details body is not valid JSON`);
+    }
+    const validate = this.compile('problem-details', PROBLEM_DETAILS_SCHEMA);
+    if (!validate(parsed)) {
+      const problems = (validate.errors ?? []).map(error => `${error.instancePath || '(body)'} ${error.message}`).join('; ');
+      throw new ContractError(`${where}: problem details body is malformed: ${problems}`);
+    }
+    const reported = (parsed as { status?: number }).status;
+    if (reported !== undefined && reported !== status) {
+      throw new ContractError(`${where}: problem details body reports status ${reported}`);
+    }
+  }
+
   private compile(key: string, schema: JsonSchema): ValidateFunction {
     let validate = this.compiled.get(key);
     if (!validate) {
@@ -110,6 +138,18 @@ export class ContractValidator {
     return validate;
   }
 }
+
+/** RFC 9457 problem details: every member is optional, and extra members (such as traceId) are allowed. */
+const PROBLEM_DETAILS_SCHEMA: JsonSchema = {
+  type: 'object',
+  properties: {
+    type: { type: 'string' },
+    title: { type: 'string' },
+    status: { type: 'integer' },
+    detail: { type: 'string' },
+    instance: { type: 'string' },
+  },
+};
 
 function isInt32(value: number): boolean {
   return Number.isInteger(value) && value >= -(2 ** 31) && value < 2 ** 31;

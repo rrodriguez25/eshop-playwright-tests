@@ -189,6 +189,9 @@ export class CheckoutPage extends BasePage {
 - The validator tightens ASP.NET's loose documents: non-nullable properties are required, and
   numbers must be JSON numbers. Why: eShop's generated schemas mark almost nothing required and
   allow numeric strings, so validating against them as-is would pass broken responses.
+- One allowance: an error response the contract documents without a body may carry a well-formed
+  `application/problem+json` body (RFC 9457) whose `status` matches. Why: ASP.NET adds that body
+  on its own and its generated documents leave it out; it is a documentation gap, not a bug.
 - Explicit contract specs live next to the API specs as `tests/api/<api>-contract.api.spec.ts`,
   tagged `@contract` (`pnpm test:contract`). They cover each endpoint's documented success and
   error responses.
