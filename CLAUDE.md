@@ -36,10 +36,10 @@ read it before changing anything.
 
 ## Conventions
 
-Follow `docs/playwright_conventions.md` for every test, page object, service and helper. It is
+Follow `docs/playwright-conventions.md` for every test, page object, service and helper. It is
 imported below so it is always in context:
 
-@docs/playwright_conventions.md
+@docs/playwright-conventions.md
 
 ## Skills
 

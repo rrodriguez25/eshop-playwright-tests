@@ -1,11 +1,11 @@
 import { test as base, expect } from '@playwright/test';
-import { ApiClient } from '../api/ApiClient';
-import { CatalogApiService } from '../api/CatalogApiService';
-import { OrderingApiService } from '../api/OrderingApiService';
+import { ApiClient } from '../api/api-client';
+import { CatalogApiService } from '../api/catalog-api-service';
+import { OrderingApiService } from '../api/ordering-api-service';
 import { env } from '../config/env';
-import { DbClient } from '../db/DbClient';
+import { DbClient } from '../db/db-client';
 import { createCatalogItem, type CreatedCatalogItem } from '../helpers/api/catalog';
-import { HomePage } from '../pages/HomePage';
+import { HomePage } from '../pages/home-page';
 
 type TestFixtures = {
   homePage: HomePage;

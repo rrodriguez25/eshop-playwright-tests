@@ -1,4 +1,4 @@
-import type { Database, Queryable } from '../../db/Database';
+import type { Database, Queryable } from '../../db/database';
 import { table } from '../../db/sql';
 
 /** Name of the database the connection is actually on, as PostgreSQL reports it. */

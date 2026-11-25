@@ -1,4 +1,4 @@
-import type { CatalogApiService, NewCatalogItem } from '../../api/CatalogApiService';
+import type { CatalogApiService, NewCatalogItem } from '../../api/catalog-api-service';
 import { uniqueName } from '../setup/unique';
 
 /** A catalog item this test created, with the id eShop assigned to it. */

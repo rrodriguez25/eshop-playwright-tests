@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import type { DbConfig } from '../db/DbClient';
+import type { DbConfig } from '../db/db-client';
 
 if (existsSync('.env')) {
   process.loadEnvFile('.env');

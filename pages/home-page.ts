@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { BasePage } from './BasePage';
+import { BasePage } from './base-page';
 
 export class HomePage extends BasePage {
   /** Text shown on the screen, used by locators and verifications. */

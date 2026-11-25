@@ -101,7 +101,7 @@ pnpm report          # open the HTML report
 
 ## Conventions
 
-[`docs/playwright_conventions.md`](docs/playwright_conventions.md) defines how tests are written
+[`docs/playwright-conventions.md`](docs/playwright-conventions.md) defines how tests are written
 here: the layers and what each may use, locator and assertion rules, test data isolation for
 parallel runs, naming, and the checks before a commit. Rules specific to this project include
 their reason.

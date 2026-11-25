@@ -1,5 +1,5 @@
 import { test, expect } from '../../fixtures/test';
-import type { NewCatalogItem } from '../../api/CatalogApiService';
+import type { NewCatalogItem } from '../../api/catalog-api-service';
 import { createCatalogItem } from '../../helpers/api/catalog';
 
 test.describe('Catalog API', () => {

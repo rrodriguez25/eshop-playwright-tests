@@ -73,7 +73,7 @@ Use the first option that works:
 
 ## 5. Page objects
 
-- One class per page or distinct component: `pages/<Name>Page.ts`, extending `BasePage`.
+- One class per page or distinct component: `pages/<name>-page.ts`, extending `BasePage`.
 - Every page object defines `URL_PATH`, the screen's path relative to the base URL. A page with
   route parameters assigns it in the constructor (``this.URL_PATH = `/item/${itemId}` ``).
 - Every page object defines `readyIndicator`: an element only that page shows once it has
@@ -139,7 +139,7 @@ export class CheckoutPage extends BasePage {
 
 ## 6. API services
 
-- One service class per eShop API: `api/<Name>ApiService.ts`, built on `APIRequestContext`.
+- One service class per eShop API: `api/<name>-api-service.ts`, built on `APIRequestContext`.
 - Types come from `api/generated/`. Never hand-edit generated files; run `pnpm generate:api-types`.
   Why: hand edits are lost on regeneration and hide contract drift the tests should catch.
 - Required plumbing such as `api-version` is added inside the service, never by the caller.
@@ -208,12 +208,18 @@ export class CheckoutPage extends BasePage {
 
 ## 10. Files and naming
 
+- File and folder names are kebab-case: lowercase words joined by dashes. Classes inside are
+  PascalCase, functions and variables camelCase, constants UPPER_SNAKE_CASE (`URL_PATH`, `TEXTS`).
+  Why: Windows and macOS ignore filename case but Linux CI doesn't, so an import whose case is
+  slightly off passes locally and fails in CI; all-lowercase names rule that out.
+
 | Thing | Convention | Example |
 | --- | --- | --- |
 | Spec | `tests/<layer>/<feature>.<layer>.spec.ts` | `tests/api/catalog.api.spec.ts` |
-| Page object | `pages/<Name>Page.ts`, class `<Name>Page` | `pages/HomePage.ts` |
-| API service | `api/<Name>ApiService.ts` | `api/CatalogApiService.ts` |
+| Page object | `pages/<name>-page.ts`, class `<Name>Page` | `pages/home-page.ts`, class `HomePage` |
+| API service | `api/<name>-api-service.ts`, class `<Name>ApiService` | `api/catalog-api-service.ts` |
 | Helper | `helpers/<layer>/<area>.ts` | `helpers/db/catalog.ts` |
+| Doc | `docs/<topic>.md` | `docs/playwright-conventions.md` |
 | Fixture | camelCase noun | `homePage`, `catalog`, `db` |
 
 - Named exports only.

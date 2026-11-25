@@ -1,4 +1,4 @@
-import type { Queryable } from '../../db/Database';
+import type { Queryable } from '../../db/database';
 
 /** A row of catalogdb's "Catalog" table, with camelCase names and `price` as a number. */
 export interface CatalogItemRow {

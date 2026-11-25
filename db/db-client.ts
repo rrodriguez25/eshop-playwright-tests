@@ -1,5 +1,5 @@
 import pg from 'pg';
-import { Database } from './Database';
+import { Database } from './database';
 
 export interface DbConfig {
   host: string;

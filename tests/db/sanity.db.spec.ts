@@ -1,6 +1,6 @@
 import { test, expect } from '../../fixtures/test';
-import type { DatabaseKey } from '../../db/DbClient';
-import { DATABASES } from '../../db/DbClient';
+import type { DatabaseKey } from '../../db/db-client';
+import { DATABASES } from '../../db/db-client';
 import { countRows, currentDatabase, migrationCount, probeWrite } from '../../helpers/db/health';
 import { uniqueName } from '../../helpers/setup/unique';
 
