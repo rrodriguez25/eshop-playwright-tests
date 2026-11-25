@@ -73,17 +73,22 @@ Use the first option that works:
 
 ## 5. Page objects
 
-- One class per page or distinct component: `pages/<Name>Page.ts`, extending `BasePage` with the
-  page's path.
+- One class per page or distinct component: `pages/<Name>Page.ts`, extending `BasePage`.
+- Every page object defines `URL_PATH`, the screen's path relative to the base URL. A page with
+  route parameters assigns it in the constructor (``this.URL_PATH = `/item/${itemId}` ``).
 - Every page object defines `readyIndicator`: an element only that page shows once it has
-  rendered, usually its main heading. `BasePage` uses it in `verifyPageIsOpen()`.
+  rendered, usually its main heading.
 - Every page object has `goto()` and `verifyPageIsOpen()`, inherited from `BasePage`.
-  `verifyPageIsOpen()` asserts the URL path and the ready indicator. Call it after navigating,
-  including after an action that lands on another page.
-- Locators are declared `readonly` at the top of the class and assigned in the constructor.
+  `verifyPageIsOpen()` asserts the URL path against `URL_PATH` and that `readyIndicator` is
+  visible. Call it after navigating, including after an action that lands on another page.
+- Text the screen shows (headings, labels, button names, messages) goes in a `static readonly
+  TEXTS` object on the page object, `as const`. Locators and verifications use it, and specs may
+  read it (`HomePage.TEXTS.heading`). No screen text is repeated as a string literal elsewhere.
+- Class layout, top to bottom: `TEXTS`, `URL_PATH`, `readyIndicator`, other locators declared
+  `readonly`, constructor that assigns the locators, then methods.
 - Methods are for multi-step actions and for verifications. No method that wraps a single action:
   specs use the locator directly (`await productPage.addToBagButton.click()`).
-- Actions are named after what a user does (`placeOrder()`), verifications start with `verify`.
+- Actions are named after what a user does (`placeOrder()`, `addToBag()`, `checkout()`), verifications start with `verify`.
 - Wrap each method's body in `test.step()` named after the user's intent. Include the arguments in
   the step name when there are fewer than three, so the report shows what was used.
 - An action that navigates to another page returns that page's object.
@@ -91,17 +96,25 @@ Use the first option that works:
 
 ```ts
 export class CheckoutPage extends BasePage {
+  static readonly TEXTS = {
+    heading: 'Checkout',
+    address: 'Address',
+    city: 'City',
+    placeOrder: 'Place order',
+  } as const;
+
+  readonly URL_PATH = '/checkout';
   protected readonly readyIndicator: Locator;
   readonly addressInput: Locator;
   readonly cityInput: Locator;
   readonly placeOrderButton: Locator;
 
   constructor(page: Page) {
-    super(page, '/checkout');
-    this.readyIndicator = page.getByRole('heading', { name: 'Checkout' });
-    this.addressInput = page.getByLabel('Address');
-    this.cityInput = page.getByLabel('City');
-    this.placeOrderButton = page.getByRole('button', { name: 'Place order' });
+    super(page);
+    this.readyIndicator = page.getByRole('heading', { name: CheckoutPage.TEXTS.heading });
+    this.addressInput = page.getByLabel(CheckoutPage.TEXTS.address);
+    this.cityInput = page.getByLabel(CheckoutPage.TEXTS.city);
+    this.placeOrderButton = page.getByRole('button', { name: CheckoutPage.TEXTS.placeOrder });
   }
 
   async placeOrder(address: string, city: string): Promise<OrdersPage> {
