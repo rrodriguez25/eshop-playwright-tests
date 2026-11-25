@@ -180,8 +180,18 @@ export class CheckoutPage extends BasePage {
 ## 6. API services
 
 - One service class per eShop API: `api/<name>-api-service.ts`, built on `APIRequestContext`.
-- Types come from `api/generated/`. Never hand-edit generated files; run `pnpm generate:api-types`.
-  Why: hand edits are lost on regeneration and hide contract drift the tests should catch.
+- Types and OpenAPI documents come from `api/generated/`. Never hand-edit generated files; run
+  `pnpm generate:api-types`, which saves eShop's OpenAPI documents and generates the types from
+  them. Why: hand edits are lost on regeneration and hide contract drift the tests should catch.
+- Every response is validated against the OpenAPI document of the API version called, inside the
+  service and before anything reads it (`ContractValidator` in `api/contract.ts`). A mismatch
+  throws a `ContractError`, so every API call in every test is also a contract check.
+- The validator tightens ASP.NET's loose documents: non-nullable properties are required, and
+  numbers must be JSON numbers. Why: eShop's generated schemas mark almost nothing required and
+  allow numeric strings, so validating against them as-is would pass broken responses.
+- Explicit contract specs live next to the API specs as `tests/api/<api>-contract.api.spec.ts`,
+  tagged `@contract` (`pnpm test:contract`). They cover each endpoint's documented success and
+  error responses.
 - Required plumbing such as `api-version` is added inside the service, never by the caller.
 - Methods that return data throw on an unexpected status, with method, path and status in the
   message (`GET /api/catalog/items/7 -> 404`).
@@ -245,6 +255,9 @@ export class CheckoutPage extends BasePage {
 - Tags go on the `describe` (`{ tag: '@smoke' }`), not in the title. `@smoke` marks the fast checks
   that prove the system is up.
 - No `test.only`. `test.skip` and `test.fixme` include a reason.
+- A known eShop bug is marked `test.fail(true, 'eShop bug: <what is wrong>')` in the test that
+  exposes it. Why: the suite stays green while the bug exists, and the test starts failing the day
+  eShop fixes it, which says the marker can come off.
 
 ## 10. File organization and naming
 
