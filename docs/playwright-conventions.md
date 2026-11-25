@@ -236,7 +236,7 @@ export class CheckoutPage extends BasePage {
   that prove the system is up.
 - No `test.only`. `test.skip` and `test.fixme` include a reason.
 
-## 10. Files and naming
+## 10. File organization and naming
 
 - File and folder names are kebab-case: lowercase words joined by dashes. Classes inside are
   PascalCase, functions and variables camelCase, constants UPPER_SNAKE_CASE (`URL_PATH`, `TEXTS`).
@@ -249,9 +249,15 @@ export class CheckoutPage extends BasePage {
 | Page object | `pages/<name>-page.ts`, class `<Name>Page` | `pages/home-page.ts`, class `HomePage` |
 | API service | `api/<name>-api-service.ts`, class `<Name>ApiService` | `api/catalog-api-service.ts` |
 | Helper | `helpers/<layer>/<area>.ts` | `helpers/db/catalog.ts` |
+| Fixture | Registered in `fixtures/test.ts`, named as a camelCase noun | `homePage`, `catalog`, `db` |
 | Doc | `docs/<topic>.md` | `docs/playwright-conventions.md` |
-| Fixture | camelCase noun | `homePage`, `catalog`, `db` |
 
+- Folders start flat and are grouped only when an area grows:
+  - Page objects move into a subfolder named after the app area once it has several pages,
+    following eShop's navigation (`pages/user/orders-page.ts`).
+  - Fixtures split by area into `fixtures/<area>-fixtures.ts` once `fixtures/test.ts` gets long,
+    combined back into the one exported `test` with `mergeTests`. Specs keep importing from
+    `fixtures/test`.
 - Named exports only.
 - TypeScript is `strict` with `noUncheckedIndexedAccess`. Avoid `!` and `as`; prefer a check that
   throws with a clear message.
