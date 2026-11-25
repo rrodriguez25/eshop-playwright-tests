@@ -3,6 +3,7 @@ import { ApiClient } from '../api/api-client';
 import { CatalogApiService } from '../api/catalog-api-service';
 import { OrderingApiService } from '../api/ordering-api-service';
 import { IdentityClient, type Credentials } from '../auth/identity-client';
+import { SessionStore } from '../auth/session-store';
 import { env } from '../config/env';
 import { DbClient } from '../db/db-client';
 import { createCatalogItem, type CreatedCatalogItem } from '../helpers/api/catalog';
@@ -11,12 +12,17 @@ import { HomePage } from '../pages/home-page';
 import { ItemPage } from '../pages/item-page';
 import { apiServiceFixture, pageFixture } from './factory';
 
+/** Where each worker saves its logged-in sessions. Ignored by git. */
+const SESSION_DIR = '.auth';
+
 type TestFixtures = {
   homePage: HomePage;
   itemPage: ItemPage;
   api: ApiClient;
   /** A uniquely named catalog item created for this test and deleted after it. */
   catalogItem: CreatedCatalogItem;
+  /** The static user the browser is logged in as: `test.use({ user: 'alice' })`. None by default. */
+  user: StaticUserKey | undefined;
 };
 
 type WorkerFixtures = {
@@ -27,11 +33,17 @@ type WorkerFixtures = {
   identity: IdentityClient;
   /** Username and the shared `USER_PASSWORD` of a static user from `data/users.json`. */
   staticCredentials: (key: StaticUserKey) => Credentials;
+  /** This worker's logged-in sessions, one per user, made on first use. */
+  sessions: SessionStore;
 };
 
 export const test = base.extend<TestFixtures, WorkerFixtures>({
   homePage: pageFixture(HomePage),
   itemPage: pageFixture(ItemPage),
+  user: [undefined, { option: true }],
+  storageState: async ({ user, sessions, staticCredentials, storageState }, use) => {
+    await use(user === undefined ? storageState : await sessions.sessionFile(user, staticCredentials(user)));
+  },
   api: async ({ playwright }, use) => {
     const context = await playwright.request.newContext({
       baseURL: env.apiUrl,
@@ -57,6 +69,9 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
   }, { scope: 'worker' }],
   staticCredentials: [async ({}, use) => {
     await use(key => ({ username: staticUser(key).username, password: env.userPassword }));
+  }, { scope: 'worker' }],
+  sessions: [async ({ identity }, use, workerInfo) => {
+    await use(new SessionStore(identity, SESSION_DIR, workerInfo.parallelIndex));
   }, { scope: 'worker' }],
 });
 

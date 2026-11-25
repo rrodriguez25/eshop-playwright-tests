@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 /**
  * The top bar every web app screen shows: logo, primary navigation, account and shopping bag.
@@ -51,5 +51,13 @@ export class HeaderBar {
   /** The signed-in user's name at the top of the account menu. It has no role or label, so it is found by the expected name. */
   userName(name: string): Locator {
     return this.root.getByText(name, { exact: true });
+  }
+
+  /** Opens the account menu and checks it names the logged-in user, by username. */
+  async verifyLoggedInAs(username: string): Promise<void> {
+    await test.step(`Verify logged in as ${username}`, async () => {
+      await this.accountButton.hover();
+      await expect(this.userName(username), `Account menu should name ${username}`).toBeVisible();
+    });
   }
 }

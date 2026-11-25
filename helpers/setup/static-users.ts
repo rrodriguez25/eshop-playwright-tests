@@ -9,11 +9,10 @@ import users from '../../data/users.json';
 export type StaticUserKey = keyof typeof users;
 
 export type StaticUser = {
+  /** Logs in, and is the name the account menu shows. */
   username: string;
   /** What kind of user this is. eShop has no roles yet, so every static user is a customer. */
   type: string;
-  /** The name the account menu shows. */
-  displayName: string;
 };
 
 const staticUsers: Record<StaticUserKey, StaticUser> = users;
