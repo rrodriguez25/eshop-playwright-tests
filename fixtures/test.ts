@@ -2,10 +2,11 @@ import { test as base, expect } from '@playwright/test';
 import { ApiClient } from '../api/api-client';
 import { CatalogApiService } from '../api/catalog-api-service';
 import { OrderingApiService } from '../api/ordering-api-service';
-import { IdentityClient } from '../auth/identity-client';
+import { IdentityClient, type Credentials } from '../auth/identity-client';
 import { env } from '../config/env';
 import { DbClient } from '../db/db-client';
 import { createCatalogItem, type CreatedCatalogItem } from '../helpers/api/catalog';
+import { staticUser, type StaticUserKey } from '../helpers/setup/static-users';
 import { HomePage } from '../pages/home-page';
 import { ItemPage } from '../pages/item-page';
 import { apiServiceFixture, pageFixture } from './factory';
@@ -24,6 +25,8 @@ type WorkerFixtures = {
   db: DbClient;
   /** Logs users in to eShop's web app over HTTP. */
   identity: IdentityClient;
+  /** Username and the shared `USER_PASSWORD` of a static user from `data/users.json`. */
+  staticCredentials: (key: StaticUserKey) => Credentials;
 };
 
 export const test = base.extend<TestFixtures, WorkerFixtures>({
@@ -51,6 +54,9 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
   }, { scope: 'worker' }],
   identity: [async ({ playwright }, use) => {
     await use(new IdentityClient(playwright.request, env.baseUrl));
+  }, { scope: 'worker' }],
+  staticCredentials: [async ({}, use) => {
+    await use(key => ({ username: staticUser(key).username, password: env.userPassword }));
   }, { scope: 'worker' }],
 });
 
