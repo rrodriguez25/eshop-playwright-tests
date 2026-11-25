@@ -13,6 +13,13 @@ import { HomePage } from '../pages/home-page';
 import { ItemPage } from '../pages/item-page';
 import { apiServiceFixture, pageFixture } from './factory';
 
+/**
+ * The web app's login cookie lasts 60 minutes (`SessionCookieLifetimeMinutes` in eShop's
+ * `src/WebApp/Extensions/Extensions.cs`). A worker logs a user in again before a saved session
+ * gets that old.
+ */
+const SESSION_MAX_AGE_MS = 50 * 60 * 1000;
+
 type TestFixtures = {
   homePage: HomePage;
   itemPage: ItemPage;
@@ -69,7 +76,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     await use(key => ({ username: staticUser(key).username, password: env.userPassword }));
   }, { scope: 'worker' }],
   sessions: [async ({ identity }, use, workerInfo) => {
-    await use(new SessionStore(identity, SESSION_DIR, workerInfo.parallelIndex));
+    await use(new SessionStore(identity, SESSION_DIR, workerInfo.parallelIndex, { maxAgeMs: SESSION_MAX_AGE_MS }));
   }, { scope: 'worker' }],
 });
 

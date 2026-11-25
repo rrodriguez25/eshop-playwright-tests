@@ -38,6 +38,12 @@ const LOGIN_FORM = {
 /** A field of the form Identity returns after a successful login, posted on to the web app. */
 const AUTHORIZATION_CODE_FIELD = 'code';
 
+/**
+ * What Identity's login form shows for a wrong username or password, and also for a locked
+ * account. eShop: `src/Identity.API/Quickstart/Account/AccountOptions.cs`.
+ */
+const INVALID_CREDENTIALS_MESSAGE = 'Invalid username or password';
+
 type LoginForm = { url: string; returnUrl: string; antiforgeryToken: string };
 type SignInForm = { action: string; fields: Record<string, string> };
 
@@ -75,9 +81,12 @@ export class IdentityClient {
     const fields = readInputs(await response.text());
     const returnUrl = fields[LOGIN_FORM.returnUrl];
     const antiforgeryToken = fields[LOGIN_FORM.antiforgeryToken];
-    if (!response.ok() || returnUrl === undefined || antiforgeryToken === undefined) {
+    const required = [LOGIN_FORM.username, LOGIN_FORM.password, LOGIN_FORM.returnUrl, LOGIN_FORM.antiforgeryToken];
+    const missing = required.filter(field => !(field in fields));
+    if (!response.ok() || returnUrl === undefined || antiforgeryToken === undefined || missing.length > 0) {
       throw new LoginError(username, 'open login form',
-        `${describe('GET', url, response)} did not show Identity's login form`);
+        `${describe('GET', url, response)} did not show Identity's login form` +
+        (missing.length > 0 ? `; missing fields: ${missing.join(', ')}` : ''));
     }
     return { url: withoutQuery(response.url()), returnUrl, antiforgeryToken };
   }
@@ -102,9 +111,12 @@ export class IdentityClient {
     const action = readFormAction(html);
     const fields = readInputs(html);
     if (!response.ok() || action === undefined || fields[AUTHORIZATION_CODE_FIELD] === undefined) {
-      throw new LoginError(username, 'submit credentials',
-        `${describe('POST', loginForm.url, response)} did not return the sign-in form; ` +
-        'the username or password is likely wrong');
+      const request = describe('POST', loginForm.url, response);
+      throw new LoginError(username, 'submit credentials', html.includes(INVALID_CREDENTIALS_MESSAGE)
+        ? `Identity rejected the username or password (${request}). A locked account shows the same ` +
+          'message: Identity locks an account for 5 minutes after 5 wrong passwords'
+        : `${request} did not return the sign-in form and showed no credentials error; ` +
+          "Identity's login form may have changed");
     }
     return { action, fields };
   }

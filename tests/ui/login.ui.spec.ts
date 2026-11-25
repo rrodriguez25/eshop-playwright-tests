@@ -1,9 +1,6 @@
 import { expect, test } from '../../fixtures/test';
 import { staticUser } from '../../helpers/setup/static-users';
 
-// Alice and bob in one file also prove that a second user logged in by the same worker gets their
-// own session, not the first user's.
-
 test.describe('Logged-in header as alice', () => {
   test.use({ user: 'alice' });
 
@@ -23,6 +20,16 @@ test.describe('Logged-in header as bob', () => {
 
     await homePage.verifyPageIsOpen();
     await homePage.header.verifyLoggedInAs(staticUser('bob').username);
+  });
+});
+
+test.describe('Per-worker login', () => {
+  // A worker logs in several users with one client. If the first user's Identity cookie carried
+  // over, the second login would skip Identity's form and fail at its first step.
+  test('logs a second user in after the first', async ({ identity, staticCredentials }) => {
+    await identity.logIn(staticCredentials('alice'));
+
+    await expect(identity.logIn(staticCredentials('bob'))).resolves.toBeDefined();
   });
 });
 

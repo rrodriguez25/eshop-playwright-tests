@@ -24,7 +24,7 @@ tests/  ──►  helpers/  ──►  pages/   api/   auth/   db/  ──►  
 | `helpers/` | Reusable steps and utilities, by type (see [Helpers](#helpers)). | Page objects, API services, `db/`, `data/`, other helpers |
 | `pages/` | Page objects: locators, actions and verifications for one page. Components shared by pages in `pages/components/`. | `@playwright/test`, other page objects and components |
 | `api/` | One typed service class per eShop API, plus generated types. | `APIRequestContext` only |
-| `auth/` | Logging users in to eShop's Identity and holding their sessions. No user data, no SQL. | `@playwright/test` only |
+| `auth/` | Logging users in to eShop's Identity and holding their sessions. No user data, no SQL. | `@playwright/test` and Node built-ins only |
 | `db/` | Connections, queries, transactions. No eShop table knowledge. | `pg` only |
 | `data/` | Static test data as JSON, such as `users.json`. No secrets. | Nothing |
 | `fixtures/test.ts` | The `test` and `expect` every spec imports. | Everything above |
@@ -288,10 +288,10 @@ export class CheckoutPage extends BasePage {
 
 - A spec that only needs someone logged in uses a static user: `test.use({ user: 'alice' })`.
   Static users are listed in `data/users.json` and share one password, `USER_PASSWORD` in `.env`.
-- Each worker logs a user in over HTTP the first time one of its tests needs them and saves the
-  session to `.auth/<user>-<worker>.json`. Why: no session is shared by the whole run, a session
-  made at worker start stays within the web app's 60-minute login cookie, and a worker restarted
-  after a failure logs in fresh.
+- Each worker logs a user in over HTTP the first time one of its tests needs them, saves the
+  session to `.auth/<user>-<worker>.json`, and logs them in again once the session is 50 minutes
+  old. Why: no session is shared by the whole run, no session outlives the web app's 60-minute
+  login cookie, and a worker restarted after a failure logs in fresh.
 - Never use a static user for a failed-login test. Why: Identity locks an account for 5 minutes
   after 5 wrong passwords, which would break every parallel test using that user.
 - Never use a static user for a test that changes the basket, orders or profile. Why: that state

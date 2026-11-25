@@ -7,6 +7,6 @@ test.describe('Identity login', () => {
     const username = uniqueName('unknown-user');
 
     await expect(identity.logIn({ username, password: 'Not-the-password1$' }))
-      .rejects.toThrow(`Login as ${username} failed at submit credentials`);
+      .rejects.toThrow(`Login as ${username} failed at submit credentials: Identity rejected the username or password`);
   });
 });
