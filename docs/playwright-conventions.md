@@ -122,7 +122,9 @@ Use the first option that works:
 - Wrap each method's body in `test.step()` named after the user's intent. Include the arguments in
   the step name when there are fewer than three, so the report shows what was used.
 - An action that navigates to another page returns that page's object.
-- Register each page object as a fixture in `fixtures/test.ts`; specs receive it, never construct it.
+- Register each page object as a fixture with `pageFixture(<Name>Page)` from `fixtures/factory.ts`;
+  specs receive it, never construct it. A page object whose constructor needs more than `page`
+  (such as an item id) is created by the action that navigates to it instead.
 
 ```ts
 export class CheckoutPage extends BasePage {
@@ -249,15 +251,17 @@ export class CheckoutPage extends BasePage {
 | Page object | `pages/<name>-page.ts`, class `<Name>Page` | `pages/home-page.ts`, class `HomePage` |
 | API service | `api/<name>-api-service.ts`, class `<Name>ApiService` | `api/catalog-api-service.ts` |
 | Helper | `helpers/<layer>/<area>.ts` | `helpers/db/catalog.ts` |
-| Fixture | Registered in `fixtures/test.ts`, named as a camelCase noun | `homePage`, `catalog`, `db` |
+| Fixture | Registered in `fixtures/test.ts`, built with a factory from `fixtures/factory.ts` when one fits, named as a camelCase noun | `homePage: pageFixture(HomePage)` |
 | Doc | `docs/<topic>.md` | `docs/playwright-conventions.md` |
 
 - Folders start flat and are grouped only when an area grows:
   - Page objects move into a subfolder named after the app area once it has several pages,
     following eShop's navigation (`pages/user/orders-page.ts`).
-  - Fixtures split by area into `fixtures/<area>-fixtures.ts` once `fixtures/test.ts` gets long,
-    combined back into the one exported `test` with `mergeTests`. Specs keep importing from
-    `fixtures/test`.
+  - Fixtures split by type once `fixtures/test.ts` gets long: `fixtures/page-fixtures.ts` (page
+    objects), `api-fixtures.ts` (API services), `data-fixtures.ts` (test data with teardown, such
+    as `catalogItem`) and `db-fixtures.ts`. `fixtures/test.ts` combines them with `mergeTests` and
+    stays the only file specs import. Repeated fixture shapes get a factory in
+    `fixtures/factory.ts` (`pageFixture`, `apiServiceFixture`).
 - Named exports only.
 - TypeScript is `strict` with `noUncheckedIndexedAccess`. Avoid `!` and `as`; prefer a check that
   throws with a clear message.

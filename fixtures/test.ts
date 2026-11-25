@@ -6,6 +6,7 @@ import { env } from '../config/env';
 import { DbClient } from '../db/db-client';
 import { createCatalogItem, type CreatedCatalogItem } from '../helpers/api/catalog';
 import { HomePage } from '../pages/home-page';
+import { apiServiceFixture, pageFixture } from './factory';
 
 type TestFixtures = {
   homePage: HomePage;
@@ -21,9 +22,7 @@ type WorkerFixtures = {
 };
 
 export const test = base.extend<TestFixtures, WorkerFixtures>({
-  homePage: async ({ page }, use) => {
-    await use(new HomePage(page));
-  },
+  homePage: pageFixture(HomePage),
   api: async ({ playwright }, use) => {
     const context = await playwright.request.newContext({
       baseURL: env.apiUrl,
@@ -37,22 +36,8 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     await use(item);
     await catalog.deleteItem(item.id);
   },
-  catalog: [async ({ playwright }, use) => {
-    const ctx = await playwright.request.newContext({
-      baseURL: env.catalogApiUrl,
-      ignoreHTTPSErrors: true,
-    });
-    await use(new CatalogApiService(ctx, env.catalogApiUrl));
-    await ctx.dispose();
-  }, { scope: 'worker' }],
-  ordering: [async ({ playwright }, use) => {
-    const ctx = await playwright.request.newContext({
-      baseURL: env.orderingApiUrl,
-      ignoreHTTPSErrors: true,
-    });
-    await use(new OrderingApiService(ctx, env.orderingApiUrl));
-    await ctx.dispose();
-  }, { scope: 'worker' }],
+  catalog: [apiServiceFixture(CatalogApiService, env.catalogApiUrl), { scope: 'worker' }],
+  ordering: [apiServiceFixture(OrderingApiService, env.orderingApiUrl), { scope: 'worker' }],
   db: [async ({}, use) => {
     const client = new DbClient(env.db);
     await use(client);
