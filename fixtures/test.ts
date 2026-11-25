@@ -6,10 +6,12 @@ import { env } from '../config/env';
 import { DbClient } from '../db/db-client';
 import { createCatalogItem, type CreatedCatalogItem } from '../helpers/api/catalog';
 import { HomePage } from '../pages/home-page';
+import { ItemPage } from '../pages/item-page';
 import { apiServiceFixture, pageFixture } from './factory';
 
 type TestFixtures = {
   homePage: HomePage;
+  itemPage: ItemPage;
   api: ApiClient;
   /** A uniquely named catalog item created for this test and deleted after it. */
   catalogItem: CreatedCatalogItem;
@@ -23,6 +25,7 @@ type WorkerFixtures = {
 
 export const test = base.extend<TestFixtures, WorkerFixtures>({
   homePage: pageFixture(HomePage),
+  itemPage: pageFixture(ItemPage),
   api: async ({ playwright }, use) => {
     const context = await playwright.request.newContext({
       baseURL: env.apiUrl,
