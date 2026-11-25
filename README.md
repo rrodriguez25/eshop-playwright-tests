@@ -18,8 +18,9 @@ and in CI.
 | `api/` | Typed API service classes and generated OpenAPI types (`api/generated/`). Run `pnpm generate:api-types` to regenerate from live specs. |
 | `db/` | PostgreSQL access: `DbClient` opens a connection pool per eShop database on first use; each `Database` runs parameterized queries and transactions. |
 | `fixtures/` | Custom Playwright fixtures that hand page objects, API services and the `db` client to tests. |
-| `helpers/setup` | Test data utilities (e.g. `uniqueName`). Every test creates its own uniquely named data so tests run in parallel safely. |
-| `helpers/api`, `helpers/ui`, `helpers/db` | Reusable steps built on the API services, page objects and database layer. Only `helpers/db` contains SQL. |
+| `helpers/setup` | Test data utilities (e.g. `uniqueName`) and setup that spans layers. Every test creates its own uniquely named data so tests run in parallel safely. |
+| `helpers/db`, `helpers/api`, `helpers/ui` | Reusable steps built on the database layer, the API services and page objects. Only `helpers/db` contains SQL. |
+| `helpers/` root | General utilities with no eShop ties. |
 | `config/` | Environment configuration, read from `.env` locally and from variables in CI. |
 | `tests/ui` | Browser tests (Chromium project). |
 | `tests/api` | API tests (no browser). |

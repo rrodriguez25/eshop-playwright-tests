@@ -20,8 +20,7 @@ tests/  ──►  helpers/  ──►  pages/   api/   db/  ──►  eShop (b
 | Layer | Contains | May use |
 | --- | --- | --- |
 | `tests/ui`, `tests/api`, `tests/db` | Specs: what is tested and what is expected. | Fixtures, helpers, page objects, API services |
-| `helpers/setup` | Test data utilities (`uniqueName`, builders). | Nothing eShop-specific |
-| `helpers/ui`, `helpers/api`, `helpers/db` | Reusable multi-step actions and queries. | Page objects, API services, `db/` |
+| `helpers/` | Reusable steps and utilities, by type (see [Helpers](#helpers)). | Page objects, API services, `db/`, other helpers |
 | `pages/` | Page objects: locators, actions and verifications for one page. | `@playwright/test` and other page objects |
 | `api/` | One typed service class per eShop API, plus generated types. | `APIRequestContext` only |
 | `db/` | Connections, queries, transactions. No eShop table knowledge. | `pg` only |
@@ -33,6 +32,37 @@ tests/  ──►  helpers/  ──►  pages/   api/   db/  ──►  eShop (b
   schema and change with its migrations; one folder keeps that change in one place. This applies
   anywhere the schema could leak, not only to SQL strings.
 - Lower layers never import higher ones.
+
+### Helpers
+
+Where a new helper goes, first match wins:
+
+1. **Prepares or cleans up test state across layers** (creates data through the API and checks it
+   in the database, logs a user in and fills a basket), usually called from a fixture →
+   `helpers/setup/`. Test data utilities such as `uniqueName` also go here.
+2. **Touches the database** → `helpers/db/`.
+3. **Calls an eShop API, no database** → `helpers/api/`.
+4. **Works with the browser**: page objects, locators, DOM checks, or matching the requests and
+   responses a page makes → `helpers/ui/`.
+5. **General utility with no eShop ties** (retrying, polling, formatting) → `helpers/` root.
+
+| Folder | Belongs here | Does not belong here |
+| --- | --- | --- |
+| `helpers/setup/` | Multi-layer arrange and cleanup, test data utilities | A single read with no setup purpose |
+| `helpers/db/` | Queries and writes on eShop's databases | API calls, browser steps |
+| `helpers/api/` | Multi-call API flows, typed builders of API payloads | SQL, browser steps |
+| `helpers/ui/` | Flows spanning several page objects, request and response matchers | SQL, API calls |
+| `helpers/` root | Utilities usable in any project | Anything that knows about eShop |
+
+- Keep database and API work separate. If a helper would do both, write one in `helpers/db/` and
+  one in `helpers/api/` when each is useful alone. Only an indivisible operation combines them,
+  and that is setup, so it goes in `helpers/setup/`.
+- A single page's actions belong in its page object, not in `helpers/ui/`. `helpers/ui/` is for
+  flows that span pages.
+- Name files by feature (`helpers/db/catalog.ts`); the folder already says the type, so no
+  `-db-helper` suffix.
+- Folders stay flat. Add a feature subfolder (`helpers/ui/checkout/`) only when one feature has
+  several helpers in the same folder.
 
 ## 2. Imports
 
