@@ -6,5 +6,6 @@ playwright/.cache/
 .env
 
 # Local only
+.claude/settings.local.json
 .claude/worktrees/
 docs/superpowers/
