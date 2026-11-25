@@ -21,7 +21,7 @@ tests/  ──►  helpers/  ──►  pages/   api/   db/  ──►  eShop (b
 | --- | --- | --- |
 | `tests/ui`, `tests/api`, `tests/db` | Specs: what is tested and what is expected. | Fixtures, helpers, page objects, API services |
 | `helpers/` | Reusable steps and utilities, by type (see [Helpers](#helpers)). | Page objects, API services, `db/`, other helpers |
-| `pages/` | Page objects: locators, actions and verifications for one page. | `@playwright/test` and other page objects |
+| `pages/` | Page objects: locators, actions and verifications for one page. Components shared by pages in `pages/components/`. | `@playwright/test`, other page objects and components |
 | `api/` | One typed service class per eShop API, plus generated types. | `APIRequestContext` only |
 | `db/` | Connections, queries, transactions. No eShop table knowledge. | `pg` only |
 | `fixtures/test.ts` | The `test` and `expect` every spec imports. | Everything above |
@@ -116,9 +116,15 @@ Use the first option that works:
 
 ## 5. Page objects
 
-- One class per page or distinct component: `pages/<name>-page.ts`, extending `BasePage`.
+- One class per page: `pages/<name>-page.ts`, extending `BasePage`. Parts of a page are mapped in
+  its page object unless they qualify as a component (see [Components](#components)).
 - Every page object defines `URL_PATH`, the screen's path relative to the base URL. A page with
-  route parameters assigns it in the constructor (``this.URL_PATH = `/item/${itemId}` ``).
+  route parameters writes them as a template and declares their types on `BasePage`:
+  `class ItemPage extends BasePage<{ itemId: number }>` with `URL_PATH = '/item/:itemId'`.
+  `goto()` then requires the parameters (`itemPage.goto({ itemId })`), and `verifyPageIsOpen()`
+  takes them optionally: with them it checks the exact path, without them any value. Why: the
+  page object stays one instance per screen, so it can be a fixture, and no call depends on state
+  an earlier call left behind.
 - Every page object defines `readyIndicator`: an element only that page shows once it has
   rendered, usually its main heading.
 - Every page object has `goto()` and `verifyPageIsOpen()`, inherited from `BasePage`.
@@ -136,8 +142,25 @@ Use the first option that works:
   the step name when there are fewer than three, so the report shows what was used.
 - An action that navigates to another page returns that page's object.
 - Register each page object as a fixture with `pageFixture(<Name>Page)` from `fixtures/factory.ts`;
-  specs receive it, never construct it. A page object whose constructor needs more than `page`
-  (such as an item id) is created by the action that navigates to it instead.
+  specs receive it, never construct it. Constructors take only `page`; route parameters go to
+  `goto()` and `verifyPageIsOpen()`. Inside page objects, an action that lands on another page
+  constructs that page's object with `new`.
+
+### Components
+
+- A part of a page gets its own class only when it appears on two or more pages (the header bar)
+  or is a self-contained widget with its own open and closed state (a dialog, a drawer).
+  Otherwise its locators stay in the page object, even when the part looks separate (the
+  catalog's filters panel). Why: a class per visual part adds objects for tests to juggle before
+  any reuse pays for them.
+- Components are plain classes in `pages/components/<name>.ts`, built from `page` and scoped to a
+  root locator. They don't extend `BasePage` and have no `URL_PATH`, `readyIndicator` or fixture.
+  The other page object rules (`TEXTS`, layout, methods, steps) apply.
+- A page exposes the components it contains as `readonly` properties (`cartPage.couponDialog`). A
+  component every screen of the web app shows is a property of `BasePage` (`homePage.header`).
+- Components import no page objects. Why: `BasePage` imports the header, so a component importing
+  a page creates a circular import. An action that lands on a page lives in the page object that
+  calls it, or in `helpers/ui/`.
 
 ```ts
 export class CheckoutPage extends BasePage {
@@ -278,6 +301,7 @@ export class CheckoutPage extends BasePage {
 | --- | --- | --- |
 | Spec | `tests/<layer>/<feature>.<layer>.spec.ts` | `tests/api/catalog.api.spec.ts` |
 | Page object | `pages/<name>-page.ts`, class `<Name>Page` | `pages/home-page.ts`, class `HomePage` |
+| Component | `pages/components/<name>.ts`, class `<Name>`, named as in eShop's source | `pages/components/header-bar.ts`, class `HeaderBar` |
 | API service | `api/<name>-api-service.ts`, class `<Name>ApiService` | `api/catalog-api-service.ts` |
 | Helper | `helpers/<layer>/<area>.ts` | `helpers/db/catalog.ts` |
 | Fixture | Registered in `fixtures/test.ts`, built with a factory from `fixtures/factory.ts` when one fits, named as a camelCase noun | `homePage: pageFixture(HomePage)` |
