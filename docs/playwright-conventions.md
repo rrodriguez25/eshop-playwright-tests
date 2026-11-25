@@ -91,6 +91,9 @@ Use the first option that works:
 - Use `exact: true` when one name is a prefix of another (`'Orders'` vs `'Orders history'`).
 - Narrow with `filter({ hasText })` or a parent locator rather than `.first()` or `.nth()`.
 - Locators live in page objects.
+- Take locators and screen text from the live page, never from memory or guesses. Agents open
+  the page with the Playwright MCP server (`.mcp.json`) and read its accessibility snapshot;
+  people can use `pnpm exec playwright codegen https://localhost:7298`.
 
 ## 4. Assertions and waiting
 

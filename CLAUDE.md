@@ -20,6 +20,9 @@ read it before changing anything.
 - eShop must be running for tests to pass: start it with
   `dotnet run --project src/eShop.AppHost/eShop.AppHost.csproj` from the eShop clone.
   Web app `https://localhost:7298`, Catalog API `http://localhost:5222`.
+- Playwright MCP (`.mcp.json`, pinned dev dependency `@playwright/mcp`) drives a real browser
+  against eShop. Use it to explore a page and read its accessibility snapshot before writing
+  page objects. If it reports a missing browser, call its `browser_install` tool.
 
 ## Structure
 

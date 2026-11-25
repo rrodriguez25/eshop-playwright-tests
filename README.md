@@ -9,6 +9,8 @@ and in CI.
 - Playwright Test, TypeScript
 - eShop (.NET Aspire, PostgreSQL, Redis, RabbitMQ), run locally in Docker
 - GitHub Actions
+- Playwright MCP (`.mcp.json`), so AI agents explore the live app and take locators from the real
+  page when writing page objects
 
 ## Architecture
 
