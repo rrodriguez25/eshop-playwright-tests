@@ -12,18 +12,21 @@ exception in a spec.
 ## 1. Layers
 
 ```
-tests/  ──►  helpers/  ──►  pages/   api/   db/  ──►  eShop (browser, HTTP, PostgreSQL)
+tests/  ──►  helpers/  ──►  pages/   api/   auth/   db/  ──►  eShop (browser, HTTP, PostgreSQL)
   │                           ▲
-  └──── fixtures/test.ts ─────┘   (hands page objects, API services and the db client to tests)
+  └──── fixtures/test.ts ─────┘   (hands page objects, API services, logged-in sessions and the db client to tests)
 ```
 
 | Layer | Contains | May use |
 | --- | --- | --- |
 | `tests/ui`, `tests/api`, `tests/db` | Specs: what is tested and what is expected. | Fixtures, helpers, page objects, API services |
-| `helpers/` | Reusable steps and utilities, by type (see [Helpers](#helpers)). | Page objects, API services, `db/`, other helpers |
+| `tests/preflight` | Checks that must pass before the suite runs (see [Before the suite](#before-the-suite)). | Same as specs |
+| `helpers/` | Reusable steps and utilities, by type (see [Helpers](#helpers)). | Page objects, API services, `db/`, `data/`, other helpers |
 | `pages/` | Page objects: locators, actions and verifications for one page. Components shared by pages in `pages/components/`. | `@playwright/test`, other page objects and components |
 | `api/` | One typed service class per eShop API, plus generated types. | `APIRequestContext` only |
+| `auth/` | Logging users in to eShop's Identity and holding their sessions. No user data, no SQL. | `@playwright/test` only |
 | `db/` | Connections, queries, transactions. No eShop table knowledge. | `pg` only |
+| `data/` | Static test data as JSON, such as `users.json`. No secrets. | Nothing |
 | `fixtures/test.ts` | The `test` and `expect` every spec imports. | Everything above |
 | `config/env.ts` | Every environment variable the suite reads. | `process.env` |
 
@@ -32,6 +35,17 @@ tests/  ──►  helpers/  ──►  pages/   api/   db/  ──►  eShop (b
   schema and change with its migrations; one folder keeps that change in one place. This applies
   anywhere the schema could leak, not only to SQL strings.
 - Lower layers never import higher ones.
+- `auth/` knows how a user logs in, never where the user came from: it takes URLs and credentials
+  as arguments and reads no environment variables. Static users come from `data/users.json`;
+  users a test creates come from `helpers/setup/`. Specs never import `auth/`; they log in through
+  `test.use({ user: '<key>' })` or a fixture.
+
+### Before the suite
+
+- `tests/preflight` holds checks that must pass before any UI test runs, such as every static user
+  logging in. It runs in the `preflight` project, which `chromium` depends on, with no retries.
+  Why: a check that retries a wrong password counts toward Identity's lockout.
+- A preflight check verifies a precondition and fails with what to fix. It never changes eShop.
 
 ### Helpers
 
@@ -269,7 +283,22 @@ export class CheckoutPage extends BasePage {
   failing test skips the rest) and slows the suite, so it must be justified.
 - Serial mode only orders tests within one file; other files keep running in other workers. When
   the conflict spans files, move those tests to their own project with `workers: 1` instead.
-- Login state is created once and reused through `storageState`.
+
+### Logged-in users
+
+- A spec that only needs someone logged in uses a static user: `test.use({ user: 'alice' })`.
+  Static users are listed in `data/users.json` and share one password, `USER_PASSWORD` in `.env`.
+- Each worker logs a user in over HTTP the first time one of its tests needs them and saves the
+  session to `.auth/<user>-<worker>.json`. Why: no session is shared by the whole run, a session
+  made at worker start stays within the web app's 60-minute login cookie, and a worker restarted
+  after a failure logs in fresh.
+- Never use a static user for a failed-login test. Why: Identity locks an account for 5 minutes
+  after 5 wrong passwords, which would break every parallel test using that user.
+- Never use a static user for a test that changes the basket, orders or profile. Why: that state
+  belongs to the user, so parallel tests sharing the user would overwrite each other. Those tests
+  create their own user.
+- A static user's password is never changed by the suite: eShop has no endpoint for it, and
+  writing it to the database would modify seeded data. Preflight verifies it instead.
 
 ## 9. Spec structure
 
@@ -300,6 +329,8 @@ export class CheckoutPage extends BasePage {
 | Thing | Convention | Example |
 | --- | --- | --- |
 | Spec | `tests/<layer>/<feature>.<layer>.spec.ts` | `tests/api/catalog.api.spec.ts` |
+| Preflight check | `tests/preflight/<check>.preflight.ts` | `tests/preflight/auth.preflight.ts` |
+| Static data | `data/<name>.json` | `data/users.json` |
 | Page object | `pages/<name>-page.ts`, class `<Name>Page` | `pages/home-page.ts`, class `HomePage` |
 | Component | `pages/components/<name>.ts`, class `<Name>`, named as in eShop's source | `pages/components/header-bar.ts`, class `HeaderBar` |
 | API service | `api/<name>-api-service.ts`, class `<Name>ApiService` | `api/catalog-api-service.ts` |

@@ -29,11 +29,14 @@ read it before changing anything.
 - `pages/`: page objects. `api/`: API clients and generated types. `db/`: PostgreSQL access
   (`DbClient` with one pool per eShop database, `Database` with `query`, `queryOne`, `execute`,
   `transaction`). `fixtures/test.ts`: the `test` and `expect` every spec imports, including the
-  worker-scoped `db` fixture. `config/`: environment.
+  worker-scoped `db` fixture. `config/`: environment. `auth/`: logs users in to Identity over HTTP
+  and keeps one session per user per worker. `data/`: static test data (`users.json`).
 - `helpers/`: `setup/`, `db/`, `api/`, `ui/` and general utilities at the root. Where a new
   helper goes is decided by the Helpers section of the conventions.
 - `tests/ui` runs in the `chromium` project, `tests/api` in `api`, `tests/db` in `db`
   (`pnpm test:db`). Database tests need `DB_PORT` and `DB_PASSWORD` in `.env`.
+- `tests/preflight` runs in `preflight` (`pnpm test:preflight`), which `chromium` depends on. UI
+  tests need `USER_PASSWORD` in `.env`; a spec logs in with `test.use({ user: 'alice' })`.
 - Specs import `test` and `expect` from `fixtures/test`, never from `@playwright/test`.
 
 ## Conventions
