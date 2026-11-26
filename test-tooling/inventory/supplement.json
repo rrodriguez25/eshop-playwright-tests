@@ -1,0 +1,32 @@
+{
+  "about": "Screens and endpoints that no @page route or OpenAPI document lists, kept by hand. Today: Identity.API's MVC account pages, which the web app redirects to for login and logout. Each entry names its eShop file:line. pnpm inventory:generate merges these into screens.json and endpoints.json. The logged-out page is not its own screen: POST /Account/Logout renders it at /account/logout.",
+  "screens": [
+    {
+      "app": "identity",
+      "route": "/account/login",
+      "module": "identity",
+      "name": "Login",
+      "source": "src/Identity.API/Quickstart/Account/AccountController.cs:39"
+    },
+    {
+      "app": "identity",
+      "route": "/account/logout",
+      "module": "identity",
+      "name": "Logout",
+      "source": "src/Identity.API/Quickstart/Account/AccountController.cs:146"
+    },
+    {
+      "app": "identity",
+      "route": "/account/accessdenied",
+      "module": "identity",
+      "name": "AccessDenied",
+      "source": "src/Identity.API/Quickstart/Account/AccountController.cs:196"
+    }
+  ],
+  "endpoints": [
+    { "method": "GET", "path": "/Account/Login", "module": "identity", "source": "src/Identity.API/Quickstart/Account/AccountController.cs:39" },
+    { "method": "POST", "path": "/Account/Login", "module": "identity", "source": "src/Identity.API/Quickstart/Account/AccountController.cs:59" },
+    { "method": "GET", "path": "/Account/Logout", "module": "identity", "source": "src/Identity.API/Quickstart/Account/AccountController.cs:146" },
+    { "method": "POST", "path": "/Account/Logout", "module": "identity", "source": "src/Identity.API/Quickstart/Account/AccountController.cs:165" }
+  ]
+}
