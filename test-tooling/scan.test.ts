@@ -131,6 +131,85 @@ test.describe(\`Header as \${user}\`, () => {
   assert.equal(claims[0]?.title, 'Header as ${user} › shows the name');
 });
 
+test('marks tests in describe.skip and describe.fixme as skipped', () => {
+  const { claims } = scan({
+    'tests/ui/a.ui.spec.ts': `${HEADER}
+test.describe.skip('off', () => { test('a', claims('CAT-UI-A', 'ui'), async () => {}); });
+test.describe.fixme('broken', () => { test('b', claims('CAT-UI-B', 'ui'), async () => {}); });
+`,
+  });
+
+  assert.deepEqual(claims.map((c) => c.skipped), [true, true]);
+});
+
+test('marks tests after a describe-level test.skip or test.fixme as skipped', () => {
+  const { claims } = scan({
+    'tests/ui/a.ui.spec.ts': `${HEADER}
+test.describe('x', () => {
+  test.skip(process.platform === 'win32', 'not on Windows');
+  test('a', claims('CAT-UI-A', 'ui'), async () => {});
+});
+test.describe('y', () => {
+  test.fixme();
+  test('b', claims('CAT-UI-B', 'ui'), async () => {});
+});
+`,
+  });
+
+  assert.deepEqual(claims.map((c) => c.skipped), [true, true]);
+});
+
+test('marks tests after a describe-level test.fail as knownBug', () => {
+  const { claims } = scan({
+    'tests/api/a.api.spec.ts': `${HEADER}
+test.describe('x', () => {
+  test.fail(true, 'eShop bug: all of these fail');
+  test('a', claims('CAT-VAL-A', 'api'), async () => {});
+});
+`,
+  });
+
+  assert.equal(claims[0]?.knownBug, true);
+  assert.equal(claims[0]?.skipped, false);
+});
+
+test('marks test.skip and test.fixme inside the body as skipped', () => {
+  const { claims } = scan({
+    'tests/api/a.api.spec.ts': `${HEADER}
+test('a', claims('CAT-READ-A', 'api'), async () => { test.skip(true, 'not yet'); });
+test('b', claims('CAT-READ-B', 'api'), async () => { test.fixme(); });
+`,
+  });
+
+  assert.deepEqual(claims.map((c) => c.skipped), [true, true]);
+});
+
+test('a skipped describe does not leak into its sibling', () => {
+  const { claims } = scan({
+    'tests/ui/a.ui.spec.ts': `${HEADER}
+test.describe.skip('off', () => { test('a', claims('CAT-UI-A', 'ui'), async () => {}); });
+test.describe('on', () => { test('b', claims('CAT-UI-B', 'ui'), async () => {}); });
+`,
+  });
+
+  assert.deepEqual(claims.map((c) => c.skipped), [true, false]);
+});
+
+test('reads claims in tests and describes with variable titles', () => {
+  const { claims, problems } = scan({
+    'tests/api/a.api.spec.ts': `${HEADER}
+const SUITE = 'Catalog';
+const NAME = 'lists items';
+test.describe(SUITE, () => {
+  test(NAME, claims('CAT-READ-A', 'api'), async () => {});
+});
+`,
+  });
+
+  assert.deepEqual(problems, []);
+  assert.equal(claims[0]?.title, 'SUITE › NAME');
+});
+
 test('ignores tests without claims', () => {
   const { claims, problems } = scan({
     'tests/api/a.api.spec.ts': `${HEADER}test('a', async () => {});\ntest('b', { tag: '@x' }, async () => {});\n`,

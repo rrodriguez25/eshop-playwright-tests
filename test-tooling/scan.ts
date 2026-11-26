@@ -52,22 +52,70 @@ function testVariant(call: ts.CallExpression): string | null {
   return null;
 }
 
-function isDescribeCall(call: ts.CallExpression): boolean {
+/** `test.describe(...)` → '', `test.describe.skip(...)` → 'skip', and so on; null for anything else. */
+function describeVariant(call: ts.CallExpression): string | null {
   let callee = call.expression;
-  if (ts.isPropertyAccessExpression(callee) && DESCRIBE_VARIANTS.has(callee.name.text)) callee = callee.expression;
-  return ts.isPropertyAccessExpression(callee) && isTestIdentifier(callee.expression) && callee.name.text === 'describe';
+  let variant = '';
+  if (ts.isPropertyAccessExpression(callee) && DESCRIBE_VARIANTS.has(callee.name.text)) {
+    variant = callee.name.text;
+    callee = callee.expression;
+  }
+  const isDescribe = ts.isPropertyAccessExpression(callee) && isTestIdentifier(callee.expression) && callee.name.text === 'describe';
+  return isDescribe ? variant : null;
 }
 
-/** A title argument's text: a string's value, or a template's source between the backticks. */
+/**
+ * A title argument's text: a string's value, a template's source between the backticks, or the
+ * source of any other expression (a variable's name), so a claim's test can still be named.
+ */
 function titleText(node: ts.Node | undefined, source: ts.SourceFile): string | null {
   if (!node) return null;
   if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return node.text;
   if (ts.isTemplateExpression(node)) return node.getText(source).slice(1, -1);
-  return null;
+  return node.getText(source);
 }
 
-const isFunction = (node: ts.Node | undefined) =>
+const isFunction = (node: ts.Node | undefined): node is ts.ArrowFunction | ts.FunctionExpression =>
   node !== undefined && (ts.isArrowFunction(node) || ts.isFunctionExpression(node));
+
+/** What a test inherits from the describes around it. */
+interface Context {
+  describes: string[];
+  skipped: boolean;
+  knownBug: boolean;
+}
+
+/** A `test.skip(...)`, `test.fixme(...)` or `test.fail(...)` that marks a scope, not declares a test. */
+function markerVariant(node: ts.Node): string | null {
+  if (!ts.isCallExpression(node)) return null;
+  const variant = testVariant(node);
+  if (variant !== 'skip' && variant !== 'fixme' && variant !== 'fail') return null;
+  return isFunction(node.arguments[node.arguments.length - 1]) ? null : variant;
+}
+
+function marks(variants: Iterable<string>): { skipped: boolean; knownBug: boolean } {
+  const all = [...variants];
+  return { skipped: all.includes('skip') || all.includes('fixme'), knownBug: all.includes('fail') };
+}
+
+/** Markers called directly in a describe's callback, which apply to every test after them. */
+function describeMarks(callback: ts.Node | undefined): { skipped: boolean; knownBug: boolean } {
+  if (!isFunction(callback) || !ts.isBlock(callback.body)) return { skipped: false, knownBug: false };
+  return marks(callback.body.statements.flatMap((statement) =>
+    ts.isExpressionStatement(statement) ? [markerVariant(statement.expression)].filter((v) => v !== null) : []));
+}
+
+/** Markers called anywhere in a test's body. */
+function bodyMarks(body: ts.Node): { skipped: boolean; knownBug: boolean } {
+  const found: string[] = [];
+  const visit = (node: ts.Node) => {
+    const variant = markerVariant(node);
+    if (variant) found.push(variant);
+    ts.forEachChild(node, visit);
+  };
+  visit(body);
+  return marks(found);
+}
 
 const isClaimsCall = (node: ts.Node): node is ts.CallExpression =>
   ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 'claims';
@@ -84,17 +132,6 @@ function literalIds(node: ts.Expression | undefined): string[] | null {
   return null;
 }
 
-function callsTestFail(body: ts.Node): boolean {
-  let found = false;
-  const visit = (node: ts.Node) => {
-    if (found) return;
-    if (ts.isCallExpression(node) && testVariant(node) === 'fail') found = true;
-    else ts.forEachChild(node, visit);
-  };
-  visit(body);
-  return found;
-}
-
 function scanFile(file: string, repoRoot: string, claims: Claim[], problems: Problem[]): void {
   const relativeFile = repoRelative(file, repoRoot);
   const source = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
@@ -104,7 +141,7 @@ function scanFile(file: string, repoRoot: string, claims: Claim[], problems: Pro
   const error = (node: ts.Node, message: string) =>
     problems.push({ level: 'error', where: `${relativeFile}:${lineOf(node)}`, message });
 
-  const readClaim = (call: ts.CallExpression, testCall: ts.CallExpression, title: string, variant: string, body: ts.Node) => {
+  const readClaim = (call: ts.CallExpression, testCall: ts.CallExpression, title: string, variant: string, body: ts.Node, context: Context) => {
     handled.add(call);
     const [idsArgument, layerArgument] = call.arguments;
     const ids = literalIds(idsArgument);
@@ -125,39 +162,47 @@ function scanFile(file: string, repoRoot: string, claims: Claim[], problems: Pro
       error(call, `claims() layer '${layer}' in a spec under tests/${folderLayer}; use '${folderLayer}'`);
       return;
     }
+    const inBody = bodyMarks(body);
     claims.push({
       file: relativeFile,
       line: lineOf(testCall),
       title,
       ids,
       layer,
-      knownBug: variant === 'fail' || callsTestFail(body),
-      skipped: variant === 'skip' || variant === 'fixme',
+      knownBug: context.knownBug || variant === 'fail' || inBody.knownBug,
+      skipped: context.skipped || variant === 'skip' || variant === 'fixme' || inBody.skipped,
     });
   };
 
-  const visit = (node: ts.Node, describes: string[]): void => {
+  const visit = (node: ts.Node, context: Context): void => {
     if (ts.isCallExpression(node)) {
       const title = titleText(node.arguments[0], source);
       const last = node.arguments[node.arguments.length - 1];
-      if (isDescribeCall(node) && title !== null) {
-        node.arguments.forEach((argument) => visit(argument, [...describes, title]));
+      const describe = describeVariant(node);
+      if (describe !== null && title !== null) {
+        const inside = describeMarks(last);
+        const inner: Context = {
+          describes: [...context.describes, title],
+          skipped: context.skipped || describe === 'skip' || describe === 'fixme' || inside.skipped,
+          knownBug: context.knownBug || inside.knownBug,
+        };
+        node.arguments.forEach((argument) => visit(argument, inner));
         return;
       }
       const variant = testVariant(node);
-      if (variant !== null && title !== null && last && isFunction(last)) {
-        const fullTitle = [...describes, title].join(' › ');
+      if (variant !== null && title !== null && isFunction(last)) {
+        const fullTitle = [...context.describes, title].join(' › ');
         for (const argument of node.arguments.slice(1, -1)) {
-          if (isClaimsCall(argument)) readClaim(argument, node, fullTitle, variant, last);
+          if (isClaimsCall(argument)) readClaim(argument, node, fullTitle, variant, last, context);
         }
       }
       if (isClaimsCall(node) && !handled.has(node)) {
         error(node, 'call claims() directly in a test call\'s arguments: test(title, claims([...], layer), fn)');
       }
     }
-    ts.forEachChild(node, (child) => visit(child, describes));
+    ts.forEachChild(node, (child) => visit(child, context));
   };
-  visit(source, []);
+  visit(source, { describes: [], skipped: false, knownBug: false });
 }
 
 /** Every `claims()` in the specs under `testsDir`, and every way one is written wrong. */
