@@ -96,6 +96,7 @@ Source code wins on *what exists*; the live page wins on *how to locate it*.
 - Tools: Playwright MCP in `.mcp.json`; eShop's source readable through
   `permissions.additionalDirectories` in `.claude/settings.local.json`.
 - Page objects: catalog (`HomePage`), item (`ItemPage`) and the header bar component (`HeaderBar`).
-- Skills: `mapping-page-objects`, written from mapping the catalog pages. Next: check that a fresh
-  agent maps the cart page correctly with it, and fix the skill where it doesn't.
+- Skills: `mapping-page-objects`, written from mapping the catalog pages, then tested by a fresh
+  agent mapping the cart page and revised from that run (login-gated and stream-rendered pages,
+  inventory scope, probe checks). Next: check the revised skill on another page.
 - Agents: none yet.

@@ -25,7 +25,8 @@ open, and a `cd` moves the working directory between them.
    lives. Take screen text from source and the live page only, never from docs or memory: the
    docs have been wrong.
 
-2. **Write the inventory before opening the browser.** One row per element a test could need:
+2. **Write the inventory before opening the browser.** One row per element a test would assert
+   on or act on:
 
    | Element | Renders when | Source file |
    | --- | --- | --- |
@@ -33,7 +34,8 @@ open, and a `cd` moves the working directory between them.
 
    Include the route and its parameters, every `@if` / `else` branch, `<AuthorizeView>` branches,
    empty, error and loading states, query-parameter states, and states only a script creates
-   (open listbox, dialog, hover menu).
+   (open listbox, dialog, hover menu). Leave out purely decorative elements and script-internal
+   ones (a hidden submit button only a script clicks), and note them in one line in the report.
 
 3. **Decide the classes.** For each distinct part, ask which other screens show it.
    - Two or more screens, or a self-contained widget (dialog, drawer): a component in
@@ -45,9 +47,14 @@ open, and a `cd` moves the working directory between them.
    [snapshot-traps.md](snapshot-traps.md).
    - Reach states by URL when you can (`?brand=9&type=8`, `?page=12`); it is faster than clicking
      and easy to repeat.
-   - Logging in and out is fine; seeded users are in eShop's `src/Identity.API/UsersSeed.cs`.
-   - **Never change shared state to reach a state.** Don't add to a seeded user's basket, place
-     orders as one, or edit seeded catalog data. Leave that state Unverified and say so in the report.
+   - **Login-gated pages** (`@attribute [Authorize]`): log in as a static user, as conventions §8
+     "Logged-in users" describes. Take the username from `data/users.json` and type the password,
+     `USER_PASSWORD` from `.env`, into Identity's login form. Never write the password into any
+     file, the probe spec included.
+   - **Never change shared state to reach a state.** A changed basket, orders or profile needs a
+     test-owned user, never a static one (§8), and seeded catalog data is never edited. Until the
+     suite can create test-owned users, leave those elements Unverified and list them in the
+     report under "needs a test-owned user".
    - Snapshots are saved under `test-results/playwright-mcp/`; grep the region you need instead
      of reading the whole file.
    - When a state the source says should render can't be reached, find out what the server
@@ -55,26 +62,36 @@ open, and a `cd` moves the working directory between them.
      don't work around it.
 
 5. **Write the page object** following the conventions. Every element from the inventory is
-   mapped. Those not seen live get `// Unverified:` with the source file and the condition.
+   mapped. Those not seen live get `// Unverified:` with the source file and the condition: one
+   marker per locator or method. A group with the same condition may say "same condition as
+   <name>".
+   - **Stream-rendered pages** (`@attribute [StreamRendering]`): the ready indicator (often the
+     hero h1) can appear before the content. Say in the class comment which locator marks each
+     loaded state (empty, with data), so tests wait for it after `verifyPageIsOpen()`.
 
 6. **Run every locator before calling it verified.** Seeing an element in a snapshot is not the
    same as the locator matching it. Write a throwaway spec, `tests/ui/zz-locator-probe.spec.ts`,
    that puts each locator not marked Unverified in the state where it renders and asserts on it
-   (`toBeVisible`, `toHaveAccessibleName`, `toHaveCount(1)`). Include
-   `// @ts-expect-error` checks for things the types should reject (such as `goto()` without
-   route parameters). Run it, fix what fails, then delete it. It is never committed.
+   (`toBeVisible`, `toHaveAccessibleName`, `toHaveCount(1)`). For a login-gated page it logs in
+   with `test.use({ user: '<key>' })`. Include `// @ts-expect-error` checks for what the types
+   should reject: `goto()` without route parameters, or `goto({ ... })` on a page without them.
+   Put those lines inside a function that is never called: `goto` ignores extra arguments at
+   runtime and would navigate. Run the probe, fix what fails, then delete it. It is never
+   committed.
 
 7. **Clean up the browser.** Log out, and remove `localStorage` keys you set (the catalog sort is
    `aw.catalog.sort.v1`), so the next exploration starts logged out with defaults.
 
 8. **Register and smoke-check.** Add a fixture with `pageFixture()` for each new page (components
-   have none), plus one `verifyPageIsOpen()` check in `tests/ui/smoke.spec.ts`. Prefer data the
-   test creates (`catalogItem`) over seeded data's position on a page. Then run the checks in
-   conventions §12.
+   have none), plus one `verifyPageIsOpen()` check in `tests/ui/smoke.spec.ts`, logged in with
+   `test.use({ user: '<key>' })` for a login-gated page. Prefer data the test creates
+   (`catalogItem`) over seeded data's position on a page. Then run the checks in conventions §12.
 
-9. **Report** what was mapped, every Unverified element with the reason it wasn't reached,
-   suspected eShop bugs, and any convention gap you had to decide on. Propose a rule for each gap
-   rather than leaving a silent exception.
+9. **Report** what was mapped, every Unverified element with the reason it wasn't reached (those
+   needing a changed basket, orders or profile under "needs a test-owned user"), what was left
+   out of the inventory, suspected eShop bugs, and any convention gap you had to decide on.
+   Propose a rule for each gap rather than leaving a silent exception. Add the pages mapped to
+   "Where things stand" in `docs/ai-workflow.md`.
 
 ## Common mistakes
 
@@ -86,6 +103,6 @@ open, and a `cd` moves the working directory between them.
 | A new class for a part only one screen shows | Keep it in the page object (step 3) |
 | Leaving out the header and other layout parts | Reuse or map them as components on `BasePage` |
 | Building a page object per item id, or skipping its fixture | Route template; constructor takes only `page` |
-| Changing a seeded user's basket to see a state | Leave it Unverified and report it |
+| Changing a static user's basket to see a state | Leave it Unverified; report it under "needs a test-owned user" |
 | Calling a locator verified because the snapshot looked right | Run it in the probe spec (step 6) |
 | A component method returning a page object | Circular import through `BasePage`; put the action in the page or `helpers/ui/` |
