@@ -8,5 +8,15 @@
     "expected": "\"Sorry, we couldn't find any such product.\" on /item/<missing id>",
     "actual": "HTTP 404, empty body; Chromium shows net::ERR_HTTP_RESPONSE_CODE_FAILURE",
     "source": "src/WebApp/Components/Pages/Item/ItemPage.razor"
+  },
+  "identity-login-missing-assets": {
+    "title": "Identity's login page requests bootstrap and jquery files that return 404",
+    "priority": "low",
+    "status": "open",
+    "module": "identity",
+    "found": "mining",
+    "expected": "The login page's stylesheets and scripts load",
+    "actual": "404 for /lib/bootstrap/dist/css/bootstrap.min.css, /lib/bootstrap/dist/js/bootstrap.bundle.min.js and /lib/jquery/dist/jquery.slim.min.js",
+    "source": "src/Identity.API/Views/Shared/_Layout.cshtml"
   }
 }
