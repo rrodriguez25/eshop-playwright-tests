@@ -297,6 +297,14 @@ export class CheckoutPage extends BasePage {
 - Never use a static user for a test that changes the basket, orders or profile. Why: that state
   belongs to the user, so parallel tests sharing the user would overwrite each other. Those tests
   create their own user.
+- A test gets its own user from the `testUser` fixture: requesting it creates a `test-user-…`
+  user, logs the browser in as them, and deletes the user after the test. It can't be combined
+  with `test.use({ user })`. The user is written to identitydb (`helpers/setup/test-users.ts`)
+  because eShop's Identity has no registration; this is the direct write §7 allows. Tests using
+  it need the database settings in `.env`.
+- Deleting a test user leaves what other services keep for them: the basket in Redis and orders
+  in orderingdb, keyed by the user's id. They belong to a deleted user, so no test or person sees
+  them again.
 - A static user's password is never changed by the suite: eShop has no endpoint for it, and
   writing it to the database would modify seeded data. Preflight verifies it instead.
 
