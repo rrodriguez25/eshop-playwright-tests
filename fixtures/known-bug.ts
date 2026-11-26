@@ -26,18 +26,23 @@ export function createKnownBug<Id extends string>(bugs: Record<Id, BugEntry>) {
       throw new Error(`Unknown bug id "${bugId}": add it to data/bugs.json first`);
     }
     await test.step(`Known bug ${bugId}: ${entry.title}`, async () => {
+      const errorsBefore = test.info().errors.length;
       let failure: { error: unknown } | undefined;
       try {
         await callback();
       } catch (error) {
         failure = { error };
       }
-      const outcome = outcomeFor(entry.status, failure !== undefined);
+      // A soft assertion inside the callback fails without throwing; it still means the bug is there.
+      const failed = failure !== undefined || test.info().errors.length > errorsBefore;
+      const outcome = outcomeFor(entry.status, failed);
       test.info().annotations.push({ type: KNOWN_BUG_ANNOTATION, description: `${bugId}: ${outcome}` });
+      // Only a test with no earlier failure becomes an expected failure: a present bug never excuses
+      // another failure that came before it.
+      if (failed && entry.status === 'open' && errorsBefore === 0) {
+        test.info().fail();
+      }
       if (failure !== undefined) {
-        if (entry.status === 'open') {
-          test.info().fail();
-        }
         throw failure.error;
       }
     });

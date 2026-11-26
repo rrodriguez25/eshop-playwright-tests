@@ -9,6 +9,16 @@
     "actual": "HTTP 404, empty body; Chromium shows net::ERR_HTTP_RESPONSE_CODE_FAILURE",
     "source": "src/WebApp/Components/Pages/Item/ItemPage.razor"
   },
+  "catalog-create-missing-name-500": {
+    "title": "POST /api/catalog/items without a name fails in the database and returns an undocumented 500",
+    "priority": "medium",
+    "status": "open",
+    "module": "catalog",
+    "found": "writing",
+    "expected": "400, as the Catalog API's OpenAPI document says",
+    "actual": "500, undocumented: the missing name fails in the database",
+    "source": "src/Catalog.API/Apis/CatalogApi.cs"
+  },
   "identity-login-missing-assets": {
     "title": "Identity's login page requests bootstrap and jquery files that return 404",
     "priority": "low",

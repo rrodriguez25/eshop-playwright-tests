@@ -326,6 +326,8 @@ export class CheckoutPage extends BasePage {
   Why: the run stays green while the bug exists, the day eShop fixes it shows up in the summary,
   and nothing else in the test is excused.
   - Put `knownBug` last in a test, or give the bug its own test: nothing after a present bug runs.
+    A failure earlier in the test is never excused, but a fixture teardown or `afterEach` that
+    fails after a present bug is reported as expected too. One more reason for a test of its own.
   - Once a bug is `fixed` and a run reports its wrapper `stale`, remove the wrapper.
   - A run started with `--reporter=…` replaces the configured reporters and writes no summary.
   - After a run, `pnpm bugs:sync` suggests status changes and `pnpm bugs:sync --apply` writes
