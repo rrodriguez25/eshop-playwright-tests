@@ -9,6 +9,7 @@ import { SESSION_DIR } from '../config/paths';
 import { DbClient } from '../db/db-client';
 import { createCatalogItem, type CreatedCatalogItem } from '../helpers/api/catalog';
 import { staticUser, type StaticUserKey } from '../helpers/setup/static-users';
+import { CartPage } from '../pages/cart-page';
 import { HomePage } from '../pages/home-page';
 import { ItemPage } from '../pages/item-page';
 import { apiServiceFixture, pageFixture } from './factory';
@@ -23,6 +24,7 @@ const SESSION_MAX_AGE_MS = 50 * 60 * 1000;
 type TestFixtures = {
   homePage: HomePage;
   itemPage: ItemPage;
+  cartPage: CartPage;
   api: ApiClient;
   /** A uniquely named catalog item created for this test and deleted after it. */
   catalogItem: CreatedCatalogItem;
@@ -45,6 +47,7 @@ type WorkerFixtures = {
 export const test = base.extend<TestFixtures, WorkerFixtures>({
   homePage: pageFixture(HomePage),
   itemPage: pageFixture(ItemPage),
+  cartPage: pageFixture(CartPage),
   user: [undefined, { option: true }],
   storageState: async ({ user, sessions, staticCredentials, storageState }, use) => {
     await use(user === undefined ? storageState : await sessions.sessionFile(user, staticCredentials(user)));
