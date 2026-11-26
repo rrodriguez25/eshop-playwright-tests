@@ -17,3 +17,15 @@ test.describe('Item page', { tag: '@smoke' }, () => {
     await itemPage.verifyPageIsOpen({ itemId: catalogItem.id });
   });
 });
+
+test.describe('Cart page', { tag: '@smoke' }, () => {
+  // Opening the cart only reads alice's basket, so the shared static user is safe here.
+  test.use({ user: 'alice' });
+
+  test('loads for a logged-in user', async ({ cartPage }) => {
+    const response = await cartPage.goto();
+
+    expect(response?.ok()).toBe(true);
+    await cartPage.verifyPageIsOpen();
+  });
+});
