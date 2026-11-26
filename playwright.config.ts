@@ -9,7 +9,9 @@ export default defineConfig({
   forbidOnly: isCI,
   retries: isCI ? 2 : 0,
   workers: isCI ? 2 : undefined,
-  reporter: isCI ? [['blob'], ['github']] : [['list'], ['html', { open: 'never' }]],
+  reporter: isCI
+    ? [['blob'], ['github'], ['./reporters/known-bugs-reporter.ts']]
+    : [['list'], ['html', { open: 'never' }], ['./reporters/known-bugs-reporter.ts']],
   use: {
     baseURL: env.baseUrl,
     ignoreHTTPSErrors: true,
