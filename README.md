@@ -30,6 +30,8 @@ and in CI.
 | `tests/ui` | Browser tests (Chromium project). |
 | `tests/api` | API tests (no browser). |
 | `tests/db` | Database tests, including a sanity check that each eShop database is reachable and readable. |
+| `test-tooling/` | The scenario catalog: per-module lists of eShop behaviours, the screens and endpoints discovered from eShop's source, and the check and report that show which behaviours each test layer covers. See [`docs/scenario-catalog.md`](docs/scenario-catalog.md). |
+| `scripts/` | The commands behind the `pnpm` scripts: saving eShop's OpenAPI documents, generating the inventory, checking and reporting on the catalog. |
 
 ## Getting started
 
@@ -106,6 +108,16 @@ pnpm test:ui         # browser tests (runs preflight first)
 pnpm test:api        # API tests
 pnpm test:db         # database tests
 pnpm report          # open the HTML report
+```
+
+The scenario catalog's commands need neither eShop nor `.env`, except `inventory:generate`, which
+reads your eShop clone from `ESHOP_SOURCE_DIR`:
+
+```powershell
+pnpm check:scenarios           # check the catalogs and every claims() in the specs
+pnpm scenarios:report catalog  # rows, claiming tests, covered/blocked/missing per layer
+pnpm inventory:generate        # rebuild the screen and endpoint lists from eShop's source
+pnpm test:tooling              # the catalog tooling's own tests
 ```
 
 ## Conventions

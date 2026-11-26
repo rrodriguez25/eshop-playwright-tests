@@ -21,7 +21,7 @@ one human checkpoint: approving which scenarios get tested.
 
 | Skill | Does | Status |
 | --- | --- | --- |
-| `discovering-scenarios` | Reads eShop's source and the running app; produces a list of scenarios to review | Planned |
+| `discovering-scenarios` | Reads eShop's source and the running app; proposes rows for a module's scenario catalog (`test-tooling/scenarios/<module>.scenarios.json`, rules in [`scenario-catalog.md`](scenario-catalog.md)) for review | Planned |
 | `mapping-page-objects` | Maps a page into a page object from its source and the live page | Written; to be checked on a second page |
 | `seeding-test-data` | Test data through fixtures and the API, unique names, cleanup | Planned |
 | `writing-ui-tests` | Browser scenario tests on top of page objects and seeded data | Planned |
@@ -53,6 +53,11 @@ discover scenarios ──► human approves the list ──► map pages ──�
 
 A coordinating session, and later a workflow, runs the steps in order. The approval step stays
 even when everything else is delegated: which scenarios are worth testing is a judgment call.
+
+The list that gets approved is a module's scenario catalog: approving it means approving its rows.
+Discovery starts from what the catalog doesn't name yet: `pnpm scenarios:report <module>` lists the
+module's screens and endpoints no row names. Tests written later claim the rows with `claims()`, and
+the same report shows which rows each layer still misses.
 
 ## Sources of truth
 
@@ -98,4 +103,7 @@ Source code wins on *what exists*; the live page wins on *how to locate it*.
 - Page objects: catalog (`HomePage`), item (`ItemPage`) and the header bar component (`HeaderBar`).
 - Skills: `mapping-page-objects`, written from mapping the catalog pages. Next: check that a fresh
   agent maps the cart page correctly with it, and fix the skill where it doesn't.
+- Scenario catalog: format, inventory, `claims()`, check and report in place
+  (`docs/scenario-catalog.md`). One pilot catalog, `catalog`, written from the existing tests.
+  Next: write `discovering-scenarios` from filling a second module's catalog.
 - Agents: none yet.

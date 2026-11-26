@@ -27,8 +27,9 @@ tests/  ──►  helpers/  ──►  pages/   api/   auth/   db/  ──►  
 | `auth/` | Logging users in to eShop's Identity and holding their sessions. No user data, no SQL. | `@playwright/test` and Node built-ins only |
 | `db/` | Connections, queries, transactions. No eShop table knowledge. | `pg` only |
 | `data/` | Static test data as JSON, such as `users.json`. No secrets. | Nothing |
-| `fixtures/test.ts` | The `test` and `expect` every spec imports. | Everything above |
+| `fixtures/test.ts` | The `test`, `expect` and `claims` every spec imports. | Everything above |
 | `config/env.ts` | Every environment variable the suite reads. | `process.env` |
+| `test-tooling/` | The scenario catalog: modules, screen and endpoint inventories, catalogs, `claims()`, and the code behind `check:scenarios` and `scenarios:report` (see [`scenario-catalog.md`](scenario-catalog.md)). Never imported by page objects, services or helpers. | `config/paths.ts`, Node built-ins, `typescript`, `ajv` |
 
 - Specs contain no raw selectors, URLs, SQL or `process.env`.
 - Only `helpers/db` contains SQL or eShop table and column names. Why: they are eShop's internal
@@ -85,7 +86,8 @@ Where a new helper goes, first match wins:
 
 ## 2. Imports
 
-- Specs import `test` and `expect` from `fixtures/test`, never from `@playwright/test`. Why: the
+- Specs import `test`, `expect` and `claims` from `fixtures/test`, never from `@playwright/test`
+  or `test-tooling/`. Why: the
   custom fixtures (`homePage`, `catalog`, `ordering`, `db`) exist only on the extended `test`;
   the base import compiles but fails at runtime.
 - Use `import type` for type-only imports.
@@ -314,6 +316,10 @@ export class CheckoutPage extends BasePage {
 - Comments only for logic that isn't obvious from the names.
 - Tags go on the `describe` (`{ tag: '@smoke' }`), not in the title. `@smoke` marks the fast checks
   that prove the system is up.
+- A test in `tests/ui` or `tests/api` names the scenario-catalog rows it checks with `claims()` in
+  its details argument: `test('filters by name prefix', claims('CAT-READ-FILTER-NAME-PREFIX', 'api'), ...)`.
+  It is the one per-test tag. Claim only what the assertions check. Rules:
+  [`scenario-catalog.md`](scenario-catalog.md).
 - No `test.only`. `test.skip` and `test.fixme` include a reason.
 - A known eShop bug is marked `test.fail(true, 'eShop bug: <what is wrong>')` in the test that
   exposes it. Why: the suite stays green while the bug exists, and the test starts failing the day
@@ -337,6 +343,9 @@ export class CheckoutPage extends BasePage {
 | Helper | `helpers/<layer>/<area>.ts` | `helpers/db/catalog.ts` |
 | Fixture | Registered in `fixtures/test.ts`, built with a factory from `fixtures/factory.ts` when one fits, named as a camelCase noun | `homePage: pageFixture(HomePage)` |
 | Doc | `docs/<topic>.md` | `docs/playwright-conventions.md` |
+| Scenario catalog | `test-tooling/scenarios/<module>.scenarios.json`, `<module>` an id in `test-tooling/modules.json` | `test-tooling/scenarios/catalog.scenarios.json` |
+| Scenario row id | `<PREFIX>-<GROUP>-<SLUG>`, permanent | `CAT-READ-FILTER-NAME-PREFIX` |
+| Tooling self-test | `test-tooling/<name>.test.ts`, run by `pnpm test:tooling` | `test-tooling/scan.test.ts` |
 
 - Folders start flat and are grouped only when an area grows:
   - Page objects move into a subfolder named after the app area once it has several pages,
@@ -363,6 +372,8 @@ export class CheckoutPage extends BasePage {
 
 ```powershell
 pnpm typecheck
+pnpm check:scenarios              # catalogs and claims
+pnpm test:tooling                 # when test-tooling/ changed
 pnpm test:<layer>                 # each project the change affects
 pnpm exec playwright test <spec> --repeat-each=3   # new or changed tests
 ```
