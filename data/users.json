@@ -1,0 +1,4 @@
+{
+  "alice": { "username": "alice", "type": "customer" },
+  "bob": { "username": "bob", "type": "customer" }
+}

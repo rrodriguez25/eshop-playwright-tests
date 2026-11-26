@@ -18,12 +18,15 @@ and in CI.
 | --- | --- |
 | `pages/` | Page objects. Each page owns its locators and actions; tests never touch raw selectors. |
 | `api/` | Typed API service classes and generated OpenAPI types (`api/generated/`). Run `pnpm generate:api-types` to regenerate from live specs. |
+| `auth/` | Logs users in to eShop's Identity over HTTP, without a browser, and keeps one session per user per worker. |
 | `db/` | PostgreSQL access: `DbClient` opens a connection pool per eShop database on first use; each `Database` runs parameterized queries and transactions. |
-| `fixtures/` | Custom Playwright fixtures that hand page objects, API services and the `db` client to tests. |
+| `data/` | Static test data, such as the users in `users.json` that tests log in as. |
+| `fixtures/` | Custom Playwright fixtures that hand page objects, API services, logged-in sessions and the `db` client to tests. |
 | `helpers/setup` | Test data utilities (e.g. `uniqueName`) and setup that spans layers. Every test creates its own uniquely named data so tests run in parallel safely. |
 | `helpers/db`, `helpers/api`, `helpers/ui` | Reusable steps built on the database layer, the API services and page objects. Only `helpers/db` contains SQL. |
 | `helpers/` root | General utilities with no eShop ties. |
 | `config/` | Environment configuration, read from `.env` locally and from variables in CI. |
+| `tests/preflight` | Checks that run before the browser tests, such as every user in `data/users.json` logging in. |
 | `tests/ui` | Browser tests (Chromium project). |
 | `tests/api` | API tests (no browser). |
 | `tests/db` | Database tests, including a sanity check that each eShop database is reachable and readable. |
@@ -92,11 +95,14 @@ pnpm exec playwright install chromium
 Copy-Item .env.example .env
 ```
 
-The defaults in `.env.example` match the URLs above. Then:
+The defaults in `.env.example` match the URLs above. Browser tests also need `USER_PASSWORD`, the
+password of the users in `data/users.json`. eShop seeds `alice` and `bob` with `Pass123$` (see its
+`src/Identity.API/UsersSeed.cs`). Then:
 
 ```powershell
 pnpm test            # everything
-pnpm test:ui         # browser tests
+pnpm test:preflight  # checks that run before the browser tests
+pnpm test:ui         # browser tests (runs preflight first)
 pnpm test:api        # API tests
 pnpm test:db         # database tests
 pnpm report          # open the HTML report

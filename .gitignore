@@ -9,3 +9,6 @@ playwright/.cache/
 .claude/settings.local.json
 .claude/worktrees/
 docs/superpowers/
+
+# Per-worker login sessions
+.auth/

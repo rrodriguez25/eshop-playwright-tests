@@ -12,18 +12,21 @@ exception in a spec.
 ## 1. Layers
 
 ```
-tests/  ──►  helpers/  ──►  pages/   api/   db/  ──►  eShop (browser, HTTP, PostgreSQL)
+tests/  ──►  helpers/  ──►  pages/   api/   auth/   db/  ──►  eShop (browser, HTTP, PostgreSQL)
   │                           ▲
-  └──── fixtures/test.ts ─────┘   (hands page objects, API services and the db client to tests)
+  └──── fixtures/test.ts ─────┘   (hands page objects, API services, logged-in sessions and the db client to tests)
 ```
 
 | Layer | Contains | May use |
 | --- | --- | --- |
 | `tests/ui`, `tests/api`, `tests/db` | Specs: what is tested and what is expected. | Fixtures, helpers, page objects, API services |
-| `helpers/` | Reusable steps and utilities, by type (see [Helpers](#helpers)). | Page objects, API services, `db/`, other helpers |
-| `pages/` | Page objects: locators, actions and verifications for one page. | `@playwright/test` and other page objects |
+| `tests/preflight` | Checks that must pass before the suite runs (see [Before the suite](#before-the-suite)). | Same as specs |
+| `helpers/` | Reusable steps and utilities, by type (see [Helpers](#helpers)). | Page objects, API services, `db/`, `data/`, other helpers |
+| `pages/` | Page objects: locators, actions and verifications for one page. Components shared by pages in `pages/components/`. | `@playwright/test`, other page objects and components |
 | `api/` | One typed service class per eShop API, plus generated types. | `APIRequestContext` only |
+| `auth/` | Logging users in to eShop's Identity and holding their sessions. No user data, no SQL. | `@playwright/test` and Node built-ins only |
 | `db/` | Connections, queries, transactions. No eShop table knowledge. | `pg` only |
+| `data/` | Static test data as JSON, such as `users.json`. No secrets. | Nothing |
 | `fixtures/test.ts` | The `test` and `expect` every spec imports. | Everything above |
 | `config/env.ts` | Every environment variable the suite reads. | `process.env` |
 
@@ -32,6 +35,17 @@ tests/  ──►  helpers/  ──►  pages/   api/   db/  ──►  eShop (b
   schema and change with its migrations; one folder keeps that change in one place. This applies
   anywhere the schema could leak, not only to SQL strings.
 - Lower layers never import higher ones.
+- `auth/` knows how a user logs in, never where the user came from: it takes URLs and credentials
+  as arguments and reads no environment variables. Static users come from `data/users.json`;
+  users a test creates come from `helpers/setup/`. Specs never import `auth/`; they log in through
+  `test.use({ user: '<key>' })` or a fixture.
+
+### Before the suite
+
+- `tests/preflight` holds checks that must pass before any UI test runs, such as every static user
+  logging in. It runs in the `preflight` project, which `chromium` depends on, with no retries.
+  Why: a check that retries a wrong password counts toward Identity's lockout.
+- A preflight check verifies a precondition and fails with what to fix. It never changes eShop.
 
 ### Helpers
 
@@ -116,9 +130,15 @@ Use the first option that works:
 
 ## 5. Page objects
 
-- One class per page or distinct component: `pages/<name>-page.ts`, extending `BasePage`.
+- One class per page: `pages/<name>-page.ts`, extending `BasePage`. Parts of a page are mapped in
+  its page object unless they qualify as a component (see [Components](#components)).
 - Every page object defines `URL_PATH`, the screen's path relative to the base URL. A page with
-  route parameters assigns it in the constructor (``this.URL_PATH = `/item/${itemId}` ``).
+  route parameters writes them as a template and declares their types on `BasePage`:
+  `class ItemPage extends BasePage<{ itemId: number }>` with `URL_PATH = '/item/:itemId'`.
+  `goto()` then requires the parameters (`itemPage.goto({ itemId })`), and `verifyPageIsOpen()`
+  takes them optionally: with them it checks the exact path, without them any value. Why: the
+  page object stays one instance per screen, so it can be a fixture, and no call depends on state
+  an earlier call left behind.
 - Every page object defines `readyIndicator`: an element only that page shows once it has
   rendered, usually its main heading.
 - Every page object has `goto()` and `verifyPageIsOpen()`, inherited from `BasePage`.
@@ -136,8 +156,25 @@ Use the first option that works:
   the step name when there are fewer than three, so the report shows what was used.
 - An action that navigates to another page returns that page's object.
 - Register each page object as a fixture with `pageFixture(<Name>Page)` from `fixtures/factory.ts`;
-  specs receive it, never construct it. A page object whose constructor needs more than `page`
-  (such as an item id) is created by the action that navigates to it instead.
+  specs receive it, never construct it. Constructors take only `page`; route parameters go to
+  `goto()` and `verifyPageIsOpen()`. Inside page objects, an action that lands on another page
+  constructs that page's object with `new`.
+
+### Components
+
+- A part of a page gets its own class only when it appears on two or more pages (the header bar)
+  or is a self-contained widget with its own open and closed state (a dialog, a drawer).
+  Otherwise its locators stay in the page object, even when the part looks separate (the
+  catalog's filters panel). Why: a class per visual part adds objects for tests to juggle before
+  any reuse pays for them.
+- Components are plain classes in `pages/components/<name>.ts`, built from `page` and scoped to a
+  root locator. They don't extend `BasePage` and have no `URL_PATH`, `readyIndicator` or fixture.
+  The other page object rules (`TEXTS`, layout, methods, steps) apply.
+- A page exposes the components it contains as `readonly` properties (`cartPage.couponDialog`). A
+  component every screen of the web app shows is a property of `BasePage` (`homePage.header`).
+- Components import no page objects. Why: `BasePage` imports the header, so a component importing
+  a page creates a circular import. An action that lands on a page lives in the page object that
+  calls it, or in `helpers/ui/`.
 
 ```ts
 export class CheckoutPage extends BasePage {
@@ -246,7 +283,22 @@ export class CheckoutPage extends BasePage {
   failing test skips the rest) and slows the suite, so it must be justified.
 - Serial mode only orders tests within one file; other files keep running in other workers. When
   the conflict spans files, move those tests to their own project with `workers: 1` instead.
-- Login state is created once and reused through `storageState`.
+
+### Logged-in users
+
+- A spec that only needs someone logged in uses a static user: `test.use({ user: 'alice' })`.
+  Static users are listed in `data/users.json` and share one password, `USER_PASSWORD` in `.env`.
+- Each worker logs a user in over HTTP the first time one of its tests needs them, saves the
+  session to `.auth/<user>-<worker>.json`, and logs them in again once the session is 50 minutes
+  old. Why: no session is shared by the whole run, no session outlives the web app's 60-minute
+  login cookie, and a worker restarted after a failure logs in fresh.
+- Never use a static user for a failed-login test. Why: Identity locks an account for 5 minutes
+  after 5 wrong passwords, which would break every parallel test using that user.
+- Never use a static user for a test that changes the basket, orders or profile. Why: that state
+  belongs to the user, so parallel tests sharing the user would overwrite each other. Those tests
+  create their own user.
+- A static user's password is never changed by the suite: eShop has no endpoint for it, and
+  writing it to the database would modify seeded data. Preflight verifies it instead.
 
 ## 9. Spec structure
 
@@ -277,7 +329,10 @@ export class CheckoutPage extends BasePage {
 | Thing | Convention | Example |
 | --- | --- | --- |
 | Spec | `tests/<layer>/<feature>.<layer>.spec.ts` | `tests/api/catalog.api.spec.ts` |
+| Preflight check | `tests/preflight/<check>.preflight.ts` | `tests/preflight/auth.preflight.ts` |
+| Static data | `data/<name>.json` | `data/users.json` |
 | Page object | `pages/<name>-page.ts`, class `<Name>Page` | `pages/home-page.ts`, class `HomePage` |
+| Component | `pages/components/<name>.ts`, class `<Name>`, named as in eShop's source | `pages/components/header-bar.ts`, class `HeaderBar` |
 | API service | `api/<name>-api-service.ts`, class `<Name>ApiService` | `api/catalog-api-service.ts` |
 | Helper | `helpers/<layer>/<area>.ts` | `helpers/db/catalog.ts` |
 | Fixture | Registered in `fixtures/test.ts`, built with a factory from `fixtures/factory.ts` when one fits, named as a camelCase noun | `homePage: pageFixture(HomePage)` |

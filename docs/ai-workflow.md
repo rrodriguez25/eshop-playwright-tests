@@ -22,7 +22,7 @@ one human checkpoint: approving which scenarios get tested.
 | Skill | Does | Status |
 | --- | --- | --- |
 | `discovering-scenarios` | Reads eShop's source and the running app; produces a list of scenarios to review | Planned |
-| `mapping-page-objects` | Maps a page into a page object from its source and the live page | Next |
+| `mapping-page-objects` | Maps a page into a page object from its source and the live page | Written; to be checked on a second page |
 | `seeding-test-data` | Test data through fixtures and the API, unique names, cleanup | Planned |
 | `writing-ui-tests` | Browser scenario tests on top of page objects and seeded data | Planned |
 | `writing-api-tests` | API scenario and contract tests | Planned |
@@ -67,7 +67,7 @@ Agents work from two sources and need both:
 
 The live page only shows one state at a time. eShop's item page
 (`src/WebApp/Components/Pages/Item/ItemPage.razor`, route `/item/{itemId:int}`) renders an
-"Add to basket" button when logged in, "Log in to purchase" when not, an extra block when the
+"Add to shopping bag" button when logged in, "Log in to purchase" when not, an extra block when the
 item is already in the basket, and a not-found state. A single snapshot shows one of these.
 
 1. **Source first, for the inventory.** Read the page's `.razor` file and the components it uses
@@ -95,4 +95,7 @@ Source code wins on *what exists*; the live page wins on *how to locate it*.
 - Conventions: written (`docs/playwright-conventions.md`).
 - Tools: Playwright MCP in `.mcp.json`; eShop's source readable through
   `permissions.additionalDirectories` in `.claude/settings.local.json`.
-- Skills and agents: none yet. First: `mapping-page-objects`, from mapping the catalog pages.
+- Page objects: catalog (`HomePage`), item (`ItemPage`) and the header bar component (`HeaderBar`).
+- Skills: `mapping-page-objects`, written from mapping the catalog pages. Next: check that a fresh
+  agent maps the cart page correctly with it, and fix the skill where it doesn't.
+- Agents: none yet.

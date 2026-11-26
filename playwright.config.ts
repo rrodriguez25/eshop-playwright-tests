@@ -26,8 +26,17 @@ export default defineConfig({
       testDir: './tests/db',
     },
     {
+      // Checks run before the suite. No retries: each retry of a wrong password counts toward
+      // Identity's lockout of a static user.
+      name: 'preflight',
+      testDir: './tests/preflight',
+      testMatch: /.*\.preflight\.ts/,
+      retries: 0,
+    },
+    {
       name: 'chromium',
       testDir: './tests/ui',
+      dependencies: ['preflight'],
       use: { ...devices['Desktop Chrome'] },
     },
   ],

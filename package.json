@@ -13,6 +13,7 @@
     "test:ui": "playwright test --project=chromium",
     "test:api": "playwright test --project=api",
     "test:db": "playwright test --project=db",
+    "test:preflight": "playwright test --project=preflight",
     "test:contract": "playwright test --project=api --grep @contract",
     "test:headed": "playwright test --project=chromium --headed",
     "typecheck": "tsc --noEmit",
