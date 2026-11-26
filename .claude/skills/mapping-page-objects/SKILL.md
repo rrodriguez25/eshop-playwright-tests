@@ -51,10 +51,10 @@ open, and a `cd` moves the working directory between them.
      "Logged-in users" describes. Take the username from `data/users.json` and type the password,
      `USER_PASSWORD` from `.env`, into Identity's login form. Never write the password into any
      file, the probe spec included.
-   - **Never change shared state to reach a state.** A changed basket, orders or profile needs a
-     test-owned user, never a static one (§8), and seeded catalog data is never edited. Until the
-     suite can create test-owned users, leave those elements Unverified and list them in the
-     report under "needs a test-owned user".
+   - **Never change shared state to reach a state.** Seeded catalog data is never edited, and a
+     static user's basket, orders and profile are never changed (§8). States that need them
+     changed (a filled bag, a placed order) aren't explored in the MCP browser: map them from the
+     source, and confirm them in the probe (step 6) with the `testUser` fixture.
    - Snapshots are saved under `test-results/playwright-mcp/`; grep the region you need instead
      of reading the whole file.
    - When a state the source says should render can't be reached, find out what the server
@@ -73,7 +73,9 @@ open, and a `cd` moves the working directory between them.
    same as the locator matching it. Write a throwaway spec, `tests/ui/zz-locator-probe.spec.ts`,
    that puts each locator not marked Unverified in the state where it renders and asserts on it
    (`toBeVisible`, `toHaveAccessibleName`, `toHaveCount(1)`). For a login-gated page it logs in
-   with `test.use({ user: '<key>' })`. Include `// @ts-expect-error` checks for what the types
+   with `test.use({ user: '<key>' })`. For a state that changes a user's basket, orders or
+   profile, the probe asks for `testUser` instead and creates the state through the app as that
+   user (adds a product on the item page, then opens the cart). Include `// @ts-expect-error` checks for what the types
    should reject: `goto()` without route parameters, or `goto({ ... })` on a page without them.
    Put those lines inside a function that is never called: `goto` ignores extra arguments at
    runtime and would navigate. Run the probe, fix what fails, then delete it. It is never
@@ -87,8 +89,8 @@ open, and a `cd` moves the working directory between them.
    `test.use({ user: '<key>' })` for a login-gated page. Prefer data the test creates
    (`catalogItem`) over seeded data's position on a page. Then run the checks in conventions §12.
 
-9. **Report** what was mapped, every Unverified element with the reason it wasn't reached (those
-   needing a changed basket, orders or profile under "needs a test-owned user"), what was left
+9. **Report** what was mapped, every Unverified element with the reason it wasn't reached (including
+   states a `testUser` couldn't produce through the app), what was left
    out of the inventory, suspected eShop bugs, and any convention gap you had to decide on.
    Propose a rule for each gap rather than leaving a silent exception. Add the pages mapped to
    "Where things stand" in `docs/ai-workflow.md`.
@@ -103,6 +105,6 @@ open, and a `cd` moves the working directory between them.
 | A new class for a part only one screen shows | Keep it in the page object (step 3) |
 | Leaving out the header and other layout parts | Reuse or map them as components on `BasePage` |
 | Building a page object per item id, or skipping its fixture | Route template; constructor takes only `page` |
-| Changing a static user's basket to see a state | Leave it Unverified; report it under "needs a test-owned user" |
+| Changing a static user's basket to see a state | Create the state as `testUser` in the probe (step 6) |
 | Calling a locator verified because the snapshot looked right | Run it in the probe spec (step 6) |
 | A component method returning a page object | Circular import through `BasePage`; put the action in the page or `helpers/ui/` |

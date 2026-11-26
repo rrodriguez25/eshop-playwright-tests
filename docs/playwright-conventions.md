@@ -271,8 +271,7 @@ export class CheckoutPage extends BasePage {
 - Serial mode is only for a conflict that isolated test data can't prevent:
   - a background process that updates many records at once (such as eShop's ordering job that
     moves every order past its grace period)
-  - a resource that can't be duplicated per test, such as a user's basket when tests share one of
-    the few seeded users
+  - a resource that can't be duplicated per test, such as a setting eShop keeps only once
   - assertions on system-wide state (totals, first page of results) that can't be filtered to the
     test's own data
   - a system-wide setting or feature toggle a test has to change
