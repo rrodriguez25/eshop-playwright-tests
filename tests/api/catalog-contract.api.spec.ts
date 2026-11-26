@@ -1,4 +1,4 @@
-import { test, expect } from '../../fixtures/test';
+import { claims, expect, test } from '../../fixtures/test';
 import { ContractError, ContractValidator, type OpenApiDocument } from '../../api/contract';
 import catalogV1 from '../../api/generated/catalog.v1.openapi.json';
 import { createCatalogItem } from '../../helpers/api/catalog';
@@ -14,7 +14,7 @@ test.describe('Catalog API contract', { tag: '@contract' }, () => {
       expect(page.data.length).toBeGreaterThan(0);
     });
 
-    test('GET /items/{id} matches the contract', async ({ catalog }) => {
+    test('GET /items/{id} matches the contract', claims('CAT-READ-ITEM-BY-ID', 'api'), async ({ catalog }) => {
       const item = await catalog.getItem(1);
 
       expect(item.id).toBe(1);
@@ -26,38 +26,38 @@ test.describe('Catalog API contract', { tag: '@contract' }, () => {
       expect(items).toHaveLength(2);
     });
 
-    test('GET /catalogtypes matches the contract', async ({ catalog }) => {
+    test('GET /catalogtypes matches the contract', claims('CAT-READ-TYPES', 'api'), async ({ catalog }) => {
       expect((await catalog.getTypes()).length).toBeGreaterThan(0);
     });
 
-    test('GET /catalogbrands matches the contract', async ({ catalog }) => {
+    test('GET /catalogbrands matches the contract', claims('CAT-READ-BRANDS', 'api'), async ({ catalog }) => {
       expect((await catalog.getBrands()).length).toBeGreaterThan(0);
     });
 
-    test('POST, PUT and DELETE /items match the contract', async ({ catalog }) => {
+    test('POST, PUT and DELETE /items match the contract', claims('CAT-WRITE-DELETE', 'api'), async ({ catalog }) => {
       const { id } = await createCatalogItem(catalog);
 
       await catalog.updateItem(id, { price: 12.5 });
       await catalog.deleteItem(id);
 
-      await expect(catalog.getItem(id)).rejects.toThrow();
+      await expect(catalog.getItem(id)).rejects.toThrow(/-> 404/);
     });
   });
 
   test.describe('error responses', () => {
-    test('GET /items/{id} with an invalid id returns the documented 400', async ({ catalog }) => {
+    test('GET /items/{id} with an invalid id returns the documented 400', claims('CAT-VAL-ITEM-ID-INVALID', 'api'), async ({ catalog }) => {
       await expect(catalog.getItem(0)).rejects.toThrow('GET /api/catalog/items/0 -> 400');
     });
 
-    test('GET /items/{id} for a missing item returns the documented 404', async ({ catalog }) => {
+    test('GET /items/{id} for a missing item returns the documented 404', claims('CAT-VAL-ITEM-MISSING', 'api'), async ({ catalog }) => {
       await expect(catalog.getItem(999_999_999)).rejects.toThrow('GET /api/catalog/items/999999999 -> 404');
     });
 
-    test('DELETE /items/{id} for a missing item returns the documented 404', async ({ catalog }) => {
+    test('DELETE /items/{id} for a missing item returns the documented 404', claims('CAT-VAL-DELETE-MISSING', 'api'), async ({ catalog }) => {
       await expect(catalog.deleteItem(999_999_999)).rejects.toThrow('DELETE /api/catalog/items/999999999 -> 404');
     });
 
-    test('POST /items without a name returns the documented 400', async ({ catalog }) => {
+    test('POST /items without a name returns the documented 400', claims('CAT-VAL-CREATE-NO-NAME', 'api'), async ({ catalog }) => {
       test.fail(true, 'eShop bug: a missing name fails in the database and returns an undocumented 500');
 
       await expect(catalog.createItem({ name: undefined } as never, 1)).rejects.toThrow('POST /api/catalog/items -> 400');

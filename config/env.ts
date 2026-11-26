@@ -23,6 +23,10 @@ export const env = {
   get userPassword(): string {
     return required('USER_PASSWORD');
   },
+  /** The local eShop clone. Read on first use: only `pnpm inventory:generate` needs it. */
+  get eshopSourceDir(): string {
+    return required('ESHOP_SOURCE_DIR');
+  },
   /** Read on first use, so UI and API runs don't need database settings. */
   get db(): DbConfig {
     return {
