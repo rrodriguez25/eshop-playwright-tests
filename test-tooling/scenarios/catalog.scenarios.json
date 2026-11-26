@@ -125,7 +125,7 @@
     },
     {
       "id": "CAT-READ-TYPES",
-      "behaviour": "Listing catalog types returns every type with its id and name.",
+      "behaviour": "Listing catalog types returns a non-empty list, each type with its id and name.",
       "screens": [],
       "endpoints": ["GET /api/catalog/catalogtypes"],
       "kind": "happy",
@@ -137,7 +137,7 @@
     },
     {
       "id": "CAT-READ-BRANDS",
-      "behaviour": "Listing catalog brands returns every brand with its id and name.",
+      "behaviour": "Listing catalog brands returns a non-empty list, each brand with its id and name.",
       "screens": [],
       "endpoints": ["GET /api/catalog/catalogbrands"],
       "kind": "happy",

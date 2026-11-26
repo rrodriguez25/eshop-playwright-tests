@@ -8,7 +8,7 @@ import { createCatalogItem } from '../../helpers/api/catalog';
 
 test.describe('Catalog API contract', { tag: '@contract' }, () => {
   test.describe('success responses', () => {
-    test('GET /items (v2) matches the contract', claims('CAT-READ-LIST-PAGINATED', 'api'), async ({ catalog }) => {
+    test('GET /items (v2) matches the contract', async ({ catalog }) => {
       const page = await catalog.getItems({ pageSize: 5 });
 
       expect(page.data.length).toBeGreaterThan(0);
@@ -20,7 +20,7 @@ test.describe('Catalog API contract', { tag: '@contract' }, () => {
       expect(item.id).toBe(1);
     });
 
-    test('GET /items/by matches the contract', claims('CAT-READ-BY-IDS', 'api'), async ({ catalog }) => {
+    test('GET /items/by matches the contract', async ({ catalog }) => {
       const items = await catalog.getItemsByIds([1, 2]);
 
       expect(items).toHaveLength(2);
@@ -34,13 +34,13 @@ test.describe('Catalog API contract', { tag: '@contract' }, () => {
       expect((await catalog.getBrands()).length).toBeGreaterThan(0);
     });
 
-    test('POST, PUT and DELETE /items match the contract', claims(['CAT-WRITE-CREATE', 'CAT-WRITE-UPDATE-PRICE', 'CAT-WRITE-DELETE'], 'api'), async ({ catalog }) => {
+    test('POST, PUT and DELETE /items match the contract', claims('CAT-WRITE-DELETE', 'api'), async ({ catalog }) => {
       const { id } = await createCatalogItem(catalog);
 
       await catalog.updateItem(id, { price: 12.5 });
       await catalog.deleteItem(id);
 
-      await expect(catalog.getItem(id)).rejects.toThrow();
+      await expect(catalog.getItem(id)).rejects.toThrow(/-> 404/);
     });
   });
 
