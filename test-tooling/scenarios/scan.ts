@@ -5,8 +5,8 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
-import { repoRelative } from './paths';
-import { LAYERS, type Layer, type Problem } from './types';
+import { repoRelative } from '../paths';
+import { LAYERS, type Layer, type Problem } from '../types';
 
 export interface Claim {
   /** Repo-relative, forward slashes: `tests/api/catalog.api.spec.ts`. */

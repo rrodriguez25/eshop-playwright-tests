@@ -3,7 +3,7 @@
 // Needs neither eShop nor .env, so CI runs it.
 import { LAYERS } from '../test-tooling/types';
 import { printProblems } from '../test-tooling/print';
-import { checkRepository } from '../test-tooling/repo-check';
+import { checkRepository } from '../test-tooling/scenarios/repo-check';
 
 const { problems, obligations, modules, claims } = checkRepository();
 printProblems(problems);

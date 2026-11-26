@@ -3,11 +3,11 @@
  * claims, plus the obligations they add up to. Missing obligations are reported, never failed.
  */
 import { loadCatalogs, catalogReferenceProblems } from './catalog';
-import { readInventory } from './inventory';
-import { readModules } from './modules';
+import { readInventory } from '../inventory/inventory';
+import { readModules } from '../modules';
 import { computeObligations, type Obligation } from './obligations';
 import { scanSpecs, type Claim } from './scan';
-import type { CatalogFile, Inventory, ModuleEntry, Problem } from './types';
+import type { CatalogFile, Inventory, ModuleEntry, Problem } from '../types';
 
 export interface CheckInput {
   modulesFile: string;

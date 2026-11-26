@@ -3,8 +3,8 @@ import { copyFileSync, mkdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { runCheck, type CheckInput } from './check';
-import { SCHEMA_FILE } from './paths';
-import { makeTempDir, writeTempFile } from './test-support';
+import { SCHEMA_FILE } from '../paths';
+import { makeTempDir, writeTempFile } from '../test-support';
 
 const ROW = {
   behaviour: 'x', screens: [], endpoints: ['GET /api/catalog/items'], kind: 'happy', source: 'existing-test',

@@ -5,9 +5,9 @@
 import { readdirSync } from 'node:fs';
 import path from 'node:path';
 import { Ajv2020, type ValidateFunction } from 'ajv/dist/2020';
-import { isRecord, readJson } from './json';
-import { repoRelative } from './paths';
-import type { CatalogFile, Inventory, ModuleEntry, Problem, ScenarioRow } from './types';
+import { isRecord, readJson } from '../json';
+import { repoRelative } from '../paths';
+import type { CatalogFile, Inventory, ModuleEntry, Problem, ScenarioRow } from '../types';
 
 const CATALOG_SUFFIX = '.scenarios.json';
 const SCHEMA_NAME = 'scenario.schema.json';

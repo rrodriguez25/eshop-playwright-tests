@@ -1,17 +1,36 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readModules } from './modules';
-import { MODULES_FILE } from './paths';
 import { writeTempFile } from './test-support';
 
 const entry = (id: string, prefix: string) => ({ id, name: id, prefix, screenSources: [], endpointPrefixes: [] });
 
-test('reads the committed module list', () => {
-  const { modules, problems } = readModules(MODULES_FILE);
+test('reads a valid module list in order', () => {
+  const file = writeTempFile('modules.json', {
+    about: 'x',
+    modules: [
+      { id: 'catalog', name: 'Catalog', prefix: 'CAT', screenSources: ['Catalog'], endpointPrefixes: ['/api/catalog'] },
+      entry('basket', 'BSK'),
+    ],
+  });
 
-  assert.deepEqual(modules.map((m) => m.id), ['catalog', 'basket', 'ordering', 'identity']);
-  assert.deepEqual(modules.map((m) => m.prefix), ['CAT', 'BSK', 'ORD', 'IDN']);
+  const { modules, problems } = readModules(file);
+
   assert.deepEqual(problems, []);
+  assert.deepEqual(modules, [
+    { id: 'catalog', name: 'Catalog', prefix: 'CAT', screenSources: ['Catalog'], endpointPrefixes: ['/api/catalog'] },
+    { id: 'basket', name: 'basket', prefix: 'BSK', screenSources: [], endpointPrefixes: [] },
+  ]);
+});
+
+test('reports an entry missing its fields', () => {
+  const file = writeTempFile('modules.json', { modules: [{ id: 'catalog' }] });
+
+  const { modules, problems } = readModules(file);
+
+  assert.deepEqual(modules, []);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0]?.message ?? '', /needs id, name, prefix/);
 });
 
 test('reports a duplicate id', () => {
