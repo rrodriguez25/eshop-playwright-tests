@@ -1,66 +1,14 @@
 import { test } from '@playwright/test';
 import bugsJson from '../data/bugs.json';
+import { parseBugs, type BugEntry, type KnownBugOutcome } from './bug-list';
 
 /** The annotation type `knownBug` adds to a test, read by the known-bugs reporter. */
 export const KNOWN_BUG_ANNOTATION = 'known-bug';
 
-/** What a run found for a known bug. */
-export type KnownBugOutcome = 'present' | 'looks-fixed' | 'regressed' | 'stale';
-
-/** One known eShop bug from `data/bugs.json`. */
-export interface BugEntry {
-  title: string;
-  priority: 'high' | 'medium' | 'low';
-  status: 'open' | 'fixed';
-  module?: string;
-  found?: 'mining' | 'writing';
-  expected?: string;
-  actual?: string;
-  source?: string;
-}
+export { KNOWN_BUG_OUTCOMES, parseBugs, type BugEntry, type KnownBugOutcome } from './bug-list';
 
 /** The id of a bug in `data/bugs.json`. A misspelled id doesn't compile. */
 export type BugId = keyof typeof bugsJson;
-
-const PRIORITIES = ['high', 'medium', 'low'] as const;
-const STATUSES = ['open', 'fixed'] as const;
-const FOUND = ['mining', 'writing'] as const;
-const OPTIONAL_TEXT = ['module', 'expected', 'actual', 'source'] as const;
-
-/** Validates the contents of `bugs.json`. Throws on the first invalid field, naming the bug and the field. */
-export function parseBugs(raw: unknown): Record<string, BugEntry> {
-  if (!isRecord(raw)) {
-    throw new Error('bugs.json: must be an object keyed by bug id');
-  }
-  const bugs: Record<string, BugEntry> = {};
-  for (const [id, value] of Object.entries(raw)) {
-    if (!isRecord(value)) {
-      throw new Error(`bugs.json: "${id}" must be an object`);
-    }
-    const title = value.title;
-    if (typeof title !== 'string' || title.length === 0) {
-      throw new Error(`bugs.json: "${id}".title must be a non-empty string`);
-    }
-    const entry: BugEntry = {
-      title,
-      priority: oneOf(id, 'priority', value.priority, PRIORITIES),
-      status: oneOf(id, 'status', value.status, STATUSES),
-    };
-    if (value.found !== undefined) {
-      entry.found = oneOf(id, 'found', value.found, FOUND);
-    }
-    for (const field of OPTIONAL_TEXT) {
-      const text = value[field];
-      if (text === undefined) continue;
-      if (typeof text !== 'string') {
-        throw new Error(`bugs.json: "${id}".${field} must be a string`);
-      }
-      entry[field] = text;
-    }
-    bugs[id] = entry;
-  }
-  return bugs;
-}
 
 /**
  * Builds `knownBug` over a list of bugs. The wrapper runs the steps that show the bug and records
@@ -99,18 +47,6 @@ export function createKnownBug<Id extends string>(bugs: Record<Id, BugEntry>) {
 function outcomeFor(status: BugEntry['status'], failed: boolean): KnownBugOutcome {
   if (status === 'open') return failed ? 'present' : 'looks-fixed';
   return failed ? 'regressed' : 'stale';
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function oneOf<T extends string>(id: string, field: string, value: unknown, allowed: readonly T[]): T {
-  const match = allowed.find(option => option === value);
-  if (match === undefined) {
-    throw new Error(`bugs.json: "${id}".${field} must be ${allowed.map(option => `"${option}"`).join(' or ')}`);
-  }
-  return match;
 }
 
 function hasEveryBugId(parsed: Record<string, BugEntry>): parsed is Record<BugId, BugEntry> {

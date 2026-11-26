@@ -328,6 +328,8 @@ export class CheckoutPage extends BasePage {
   - Put `knownBug` last in a test, or give the bug its own test: nothing after a present bug runs.
   - Once a bug is `fixed` and a run reports its wrapper `stale`, remove the wrapper.
   - A run started with `--reporter=…` replaces the configured reporters and writes no summary.
+  - After a run, `pnpm bugs:sync` suggests status changes and `pnpm bugs:sync --apply` writes
+    them. Review the diff of `data/bugs.json` like any other change. Tests never write to it.
 
 ## 10. File organization and naming
 

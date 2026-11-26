@@ -1,4 +1,5 @@
-import { KNOWN_BUG_ANNOTATION, type BugEntry, type KnownBugOutcome } from '../fixtures/known-bug';
+import { KNOWN_BUG_OUTCOMES, type BugEntry, type KnownBugOutcome } from '../fixtures/bug-list';
+import { KNOWN_BUG_ANNOTATION } from '../fixtures/known-bug';
 
 /** One known bug's outcome in one test. */
 export interface KnownBugRecord {
@@ -6,8 +7,6 @@ export interface KnownBugRecord {
   outcome: KnownBugOutcome;
   test: string;
 }
-
-const OUTCOMES: readonly KnownBugOutcome[] = ['present', 'looks-fixed', 'regressed', 'stale'];
 
 /** Sections of the summary, most urgent first. */
 const SECTIONS: readonly { outcome: KnownBugOutcome; heading: string }[] = [
@@ -21,7 +20,7 @@ const SECTIONS: readonly { outcome: KnownBugOutcome; heading: string }[] = [
 export function parseKnownBugAnnotation(description: string): { bugId: string; outcome: KnownBugOutcome } | undefined {
   const match = /^(.+): ([a-z-]+)$/.exec(description);
   const bugId = match?.[1];
-  const outcome = OUTCOMES.find(option => option === match?.[2]);
+  const outcome = KNOWN_BUG_OUTCOMES.find(option => option === match?.[2]);
   return bugId === undefined || outcome === undefined ? undefined : { bugId, outcome };
 }
 

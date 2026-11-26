@@ -58,6 +58,17 @@ test.describe('parseBugs', () => {
       .toThrow('bugs.json: "x".status must be "open" or "fixed"');
   });
 
+  test('keeps the fields in file order', () => {
+    const parsed = parseBugs({ x: { status: 'open', title: 't', module: 'item', priority: 'low' } });
+
+    expect(Object.keys(parsed.x ?? {})).toEqual(['status', 'title', 'module', 'priority']);
+  });
+
+  test('rejects an unknown field', () => {
+    expect(() => parseBugs({ x: { title: 't', priority: 'low', status: 'open', notes: 'n' } }))
+      .toThrow('bugs.json: "x".notes is not a known field');
+  });
+
   test('rejects an entry without a title', () => {
     expect(() => parseBugs({ x: { priority: 'low', status: 'open' } })).toThrow('bugs.json: "x".title');
   });
