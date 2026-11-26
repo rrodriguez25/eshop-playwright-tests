@@ -84,3 +84,4 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
 });
 
 export { expect };
+export { knownBug } from './known-bug';

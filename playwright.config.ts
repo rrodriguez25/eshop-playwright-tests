@@ -26,6 +26,12 @@ export default defineConfig({
       testDir: './tests/db',
     },
     {
+      // Tests of the suite's own tooling, such as knownBug and its reporter. Needs no running eShop.
+      name: 'suite',
+      testDir: './tests/suite',
+      testMatch: /.*\.suite\.spec\.ts/,
+    },
+    {
       // Checks run before the suite. No retries: each retry of a wrong password counts toward
       // Identity's lockout of a static user.
       name: 'preflight',

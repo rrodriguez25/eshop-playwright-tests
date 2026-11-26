@@ -1,0 +1,12 @@
+{
+  "item-404-empty-body": {
+    "title": "A missing item returns 404 with an empty body, so the not-found message never renders",
+    "priority": "medium",
+    "status": "open",
+    "module": "item",
+    "found": "mining",
+    "expected": "\"Sorry, we couldn't find any such product.\" on /item/<missing id>",
+    "actual": "HTTP 404, empty body; Chromium shows net::ERR_HTTP_RESPONSE_CODE_FAILURE",
+    "source": "src/WebApp/Components/Pages/Item/ItemPage.razor"
+  }
+}

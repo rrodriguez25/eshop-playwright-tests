@@ -13,5 +13,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["playwright.config.ts", "api/**/*.ts", "auth/**/*.ts", "config/**/*.ts", "db/**/*.ts","fixtures/**/*.ts", "pages/**/*.ts", "helpers/**/*.ts", "tests/**/*.ts"]
+  "include": ["playwright.config.ts", "api/**/*.ts", "auth/**/*.ts", "config/**/*.ts", "db/**/*.ts","fixtures/**/*.ts", "pages/**/*.ts", "helpers/**/*.ts", "reporters/**/*.ts", "tests/**/*.ts"]
 }
