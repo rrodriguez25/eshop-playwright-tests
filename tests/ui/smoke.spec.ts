@@ -1,7 +1,7 @@
-import { expect, test } from '../../fixtures/test';
+import { claims, expect, test } from '../../fixtures/test';
 
 test.describe('Home page', { tag: '@smoke' }, () => {
-  test('loads successfully', async ({ homePage }) => {
+  test('loads successfully', claims('CAT-UI-HOME-OPENS', 'ui'), async ({ homePage }) => {
     const response = await homePage.goto();
 
     expect(response?.ok()).toBe(true);
@@ -10,7 +10,7 @@ test.describe('Home page', { tag: '@smoke' }, () => {
 });
 
 test.describe('Item page', { tag: '@smoke' }, () => {
-  test('loads for an existing item', async ({ itemPage, catalogItem }) => {
+  test('loads for an existing item', claims('CAT-UI-ITEM-OPENS', 'ui'), async ({ itemPage, catalogItem }) => {
     const response = await itemPage.goto({ itemId: catalogItem.id });
 
     expect(response?.ok()).toBe(true);
