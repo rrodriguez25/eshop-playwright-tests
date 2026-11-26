@@ -1,0 +1,19 @@
+{
+  "$schema": "./scenario.schema.json",
+  "module": "catalog",
+  "prefix": "CAT",
+  "scenarios": [
+    {
+      "id": "CAT-READ-EXAMPLE",
+      "behaviour": "Copy this file to <module>.scenarios.json, set module and prefix from test-tooling/modules.json, and replace this row. Files starting with _ are never read as catalogs.",
+      "screens": ["webapp:/"],
+      "endpoints": ["GET /api/catalog/items"],
+      "kind": "happy",
+      "source": "screen",
+      "sourceNote": "src/WebApp/Components/Pages/Catalog/Catalog.razor:1",
+      "status": "active",
+      "added": "2026-11-26",
+      "changed": "2026-11-26"
+    }
+  ]
+}

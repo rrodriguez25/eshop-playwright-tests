@@ -16,7 +16,10 @@ read it before changing anything.
 
 - Node 26 (`.nvmrc`), pnpm (version pinned in `package.json`). Use pnpm, never npm or yarn.
 - `pnpm test`, `pnpm test:ui`, `pnpm test:api`, `pnpm typecheck`, `pnpm report`.
-- Run `pnpm typecheck` and the affected tests before every commit.
+- Scenario catalog: `pnpm check:scenarios`, `pnpm scenarios:report [module]`,
+  `pnpm inventory:generate` (needs `ESHOP_SOURCE_DIR` in `.env`), `pnpm test:tooling`. Scripts in
+  `scripts/*.ts` run with `tsx`.
+- Run `pnpm typecheck`, `pnpm check:scenarios` and the affected tests before every commit.
 - eShop must be running for tests to pass: start it with
   `dotnet run --project src/eShop.AppHost/eShop.AppHost.csproj` from the eShop clone.
   Web app `https://localhost:7298`, Catalog API `http://localhost:5222`.
@@ -39,6 +42,11 @@ read it before changing anything.
 - `tests/preflight` runs in `preflight` (`pnpm test:preflight`), which `chromium` depends on. UI
   tests need `USER_PASSWORD` in `.env`; a spec logs in with `test.use({ user: 'alice' })`.
 - Specs import `test` and `expect` from `fixtures/test`, never from `@playwright/test`.
+- `test-tooling/`: the scenario catalog. `modules.json` (the module list), `scenarios/` (one
+  `<module>.scenarios.json` of behaviour rows per module), `inventory/` (screens and endpoints
+  generated from eShop, plus a hand-kept supplement), and the code behind the check and report.
+  Tests name the rows they check with `claims()` from `fixtures/test`. Rules:
+  `docs/scenario-catalog.md`.
 
 ## Conventions
 

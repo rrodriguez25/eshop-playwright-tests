@@ -1,0 +1,33 @@
+{
+  "about": "The single list of eShop modules. Each module may have one catalog, test-tooling/scenarios/<id>.scenarios.json, whose row ids start with its prefix. screenSources are folders or .razor files under eShop's src/WebApp/Components/Pages; endpointPrefixes assign OpenAPI and supplement endpoints by path. See docs/scenario-catalog.md.",
+  "modules": [
+    {
+      "id": "catalog",
+      "name": "Catalog",
+      "prefix": "CAT",
+      "screenSources": ["Catalog", "Item"],
+      "endpointPrefixes": ["/api/catalog"]
+    },
+    {
+      "id": "basket",
+      "name": "Basket",
+      "prefix": "BSK",
+      "screenSources": ["Cart"],
+      "endpointPrefixes": []
+    },
+    {
+      "id": "ordering",
+      "name": "Ordering",
+      "prefix": "ORD",
+      "screenSources": ["Checkout", "User/Orders.razor"],
+      "endpointPrefixes": ["/api/orders"]
+    },
+    {
+      "id": "identity",
+      "name": "Identity",
+      "prefix": "IDN",
+      "screenSources": ["User/LogIn.razor", "User/LogOut.razor"],
+      "endpointPrefixes": ["/Account"]
+    }
+  ]
+}

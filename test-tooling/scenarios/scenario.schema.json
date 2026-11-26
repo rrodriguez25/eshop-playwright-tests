@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scenario.schema.json",
+  "title": "Scenario catalog: the behaviours of one eShop module",
+  "description": "One file per module, named <module>.scenarios.json, where <module> is an id in test-tooling/modules.json. pnpm check:scenarios validates every catalog against this schema. See docs/scenario-catalog.md.",
+  "type": "object",
+  "required": ["module", "prefix", "scenarios"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "description": "Optional. \"./scenario.schema.json\" lets an editor check the file as you type.",
+      "type": "string"
+    },
+    "module": {
+      "description": "The module's id in test-tooling/modules.json; the same as the file name before .scenarios.json.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "prefix": {
+      "description": "The module's prefix in test-tooling/modules.json: 2 to 4 capital letters that start every id in this file.",
+      "type": "string",
+      "pattern": "^[A-Z]{2,4}$"
+    },
+    "scenarios": {
+      "description": "The rows. Retired rows stay, so their ids are never reused.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/scenario" }
+    }
+  },
+  "$defs": {
+    "scenario": {
+      "type": "object",
+      "required": ["id", "behaviour", "screens", "endpoints", "kind", "source", "sourceNote", "status", "added", "changed"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "<PREFIX>-<GROUP>-<SLUG> in capitals, e.g. CAT-READ-FILTER-NAME-PREFIX. Permanent: never renamed, never reused.",
+          "type": "string",
+          "pattern": "^[A-Z]{2,4}-[A-Z]+-[A-Z0-9-]*[A-Z0-9]$"
+        },
+        "behaviour": {
+          "description": "One sentence, present tense: what eShop does, observable by a user or caller.",
+          "type": "string",
+          "pattern": "[A-Za-z]"
+        },
+        "screens": {
+          "description": "Screen ids from test-tooling/inventory/screens.json (<app>:<route>) where the behaviour is seen. Naming one makes the row owe a UI test. May be empty.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^(webapp|identity):/[^ ]*$" }
+        },
+        "endpoints": {
+          "description": "Endpoint ids from test-tooling/inventory/endpoints.json (METHOD /path) whose contract the behaviour is. Naming one makes the row owe an API test. May be empty.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[A-Z]+ /[^ ]*$" }
+        },
+        "kind": {
+          "description": "happy: the normal path. error: eShop refuses or reports a problem. edge: a boundary or unusual case. regression: a bug that came back once.",
+          "enum": ["happy", "error", "edge", "regression"]
+        },
+        "source": {
+          "description": "Where the row came from: screen (reading a page), business-rule (a rule in eShop's code), bug, new-feature, or existing-test (written from a test that already checks it).",
+          "enum": ["screen", "business-rule", "bug", "new-feature", "existing-test"]
+        },
+        "sourceNote": {
+          "description": "Free text for the next reader: an eShop file:line, an issue link, or the test. Nothing checks it.",
+          "type": "string"
+        },
+        "status": {
+          "description": "active, or retired when the behaviour is gone (the row stays so its id is never reused).",
+          "enum": ["active", "retired"]
+        },
+        "added": {
+          "description": "The day the row was written, YYYY-MM-DD.",
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "changed": {
+          "description": "The day the row last changed, YYYY-MM-DD. Equal to added for a new row; never before it.",
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      }
+    }
+  }
+}
