@@ -41,8 +41,7 @@ pnpm test:tooling                  # the tooling's own tests
   "source": "existing-test",
   "sourceNote": "tests/api/catalog.api.spec.ts 'filters by name prefix'",
   "status": "active",
-  "added": "2026-11-26",
-  "changed": "2026-11-26"
+  "lastUpdated": "2026-11-26"
 }
 ```
 
@@ -56,8 +55,8 @@ pnpm test:tooling                  # the tooling's own tests
 - **`source`**: `screen` (read from a page), `business-rule` (a rule in eShop's code),
   `bug`, `new-feature`, or `existing-test` (written from a test that already checks it).
   `sourceNote` is free text for the next reader: an eShop `file:line`, an issue, the test.
-- **`added`** is the day the row is written; **`changed`** starts equal to it and moves to today
-  whenever `behaviour`, `screens`, `endpoints`, `kind` or `status` changes.
+- **`lastUpdated`** is the day the row was written, and moves to today whenever `behaviour`,
+  `screens`, `endpoints`, `kind` or `status` changes.
 
 ### Ids are permanent
 
@@ -69,7 +68,7 @@ through RabbitMQ, such as an order's status changing).
 
 Tests and history refer to ids, so an id is never renamed or reused:
 
-- To reword a row, edit `behaviour` and set `changed`.
+- To reword a row, edit `behaviour` and set `lastUpdated` to today.
 - To split a row, retire it and add new rows with new ids.
 - When the behaviour leaves eShop, set `status` to `retired` and keep the row. Tests stop
   claiming it.
@@ -150,7 +149,7 @@ Runs without eShop or `.env`, so CI runs it. It prints every problem and exits 1
 - A file named for no module, a `module` field that differs from the file name, or a `prefix`
   that differs from `modules.json`.
 - An id without its module's prefix, or an id used twice.
-- A date that isn't real, or `changed` before `added`.
+- A `lastUpdated` that isn't a real date.
 - An active row naming a screen or endpoint the inventory doesn't list.
 - A claim of an id no catalog defines, or of a retired row.
 - A claim with variables instead of literals, a layer other than `ui` or `api`, a layer that

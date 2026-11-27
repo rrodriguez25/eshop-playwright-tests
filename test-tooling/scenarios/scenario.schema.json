@@ -30,7 +30,7 @@
   "$defs": {
     "scenario": {
       "type": "object",
-      "required": ["id", "behaviour", "screens", "endpoints", "kind", "source", "sourceNote", "status", "added", "changed"],
+      "required": ["id", "behaviour", "screens", "endpoints", "kind", "source", "sourceNote", "status", "lastUpdated"],
       "additionalProperties": false,
       "properties": {
         "id": {
@@ -71,13 +71,8 @@
           "description": "active, or retired when the behaviour is gone (the row stays so its id is never reused).",
           "enum": ["active", "retired"]
         },
-        "added": {
-          "description": "The day the row was written, YYYY-MM-DD.",
-          "type": "string",
-          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
-        },
-        "changed": {
-          "description": "The day the row last changed, YYYY-MM-DD. Equal to added for a new row; never before it.",
+        "lastUpdated": {
+          "description": "The day the row was written or last changed (behaviour, screens, endpoints, kind or status), YYYY-MM-DD.",
           "type": "string",
           "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
         }
