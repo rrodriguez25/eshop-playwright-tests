@@ -11,7 +11,7 @@
  * literals, directly in the test call. See docs/scenario-catalog.md.
  */
 import type { TestDetails } from '@playwright/test';
-import type { Layer } from './types';
+import type { Layer } from '../types';
 
 export const SCENARIO_ANNOTATION = 'scenario';
 

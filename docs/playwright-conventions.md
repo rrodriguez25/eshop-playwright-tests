@@ -275,8 +275,7 @@ export class CheckoutPage extends BasePage {
 - Serial mode is only for a conflict that isolated test data can't prevent:
   - a background process that updates many records at once (such as eShop's ordering job that
     moves every order past its grace period)
-  - a resource that can't be duplicated per test, such as a user's basket when tests share one of
-    the few seeded users
+  - a resource that can't be duplicated per test, such as a setting eShop keeps only once
   - assertions on system-wide state (totals, first page of results) that can't be filtered to the
     test's own data
   - a system-wide setting or feature toggle a test has to change
@@ -301,6 +300,16 @@ export class CheckoutPage extends BasePage {
 - Never use a static user for a test that changes the basket, orders or profile. Why: that state
   belongs to the user, so parallel tests sharing the user would overwrite each other. Those tests
   create their own user.
+- A test gets its own user from the `testUser` fixture: requesting it creates a `test-user-…`
+  user, logs the browser in as them, and deletes the user after the test. It can't be combined
+  with `test.use({ user })`. The user is written to identitydb (`helpers/setup/test-users.ts`)
+  because eShop's Identity has no registration; this is the direct write §7 allows. Tests using
+  it need the database settings in `.env`.
+- Every user, static or test-owned, logs in with `USER_PASSWORD`. Why: a person can sign in as
+  any user the suite made, and a user left behind by a crashed run is still usable.
+- Deleting a test user leaves what other services keep for them: the basket in Redis and orders
+  in orderingdb, keyed by the user's id. They belong to a deleted user, so no test or person sees
+  them again.
 - A static user's password is never changed by the suite: eShop has no endpoint for it, and
   writing it to the database would modify seeded data. Preflight verifies it instead.
 
@@ -367,7 +376,8 @@ export class CheckoutPage extends BasePage {
 | Doc | `docs/<topic>.md` | `docs/playwright-conventions.md` |
 | Scenario catalog | `test-tooling/scenarios/<module>.scenarios.json`, `<module>` an id in `test-tooling/modules.json` | `test-tooling/scenarios/catalog.scenarios.json` |
 | Scenario row id | `<PREFIX>-<GROUP>-<SLUG>`, permanent | `CAT-READ-FILTER-NAME-PREFIX` |
-| Tooling self-test | `test-tooling/<name>.test.ts`, run by `pnpm test:tooling` | `test-tooling/scan.test.ts` |
+| Tooling code | `test-tooling/<area>/<name>.ts` by feature (`scenarios/`, `inventory/`); shared files at `test-tooling/` root | `test-tooling/scenarios/scan.ts` |
+| Tooling self-test | `<name>.toolingtest.ts` beside the code it tests, run by `pnpm test:tooling`. Tests the tooling's rules on fake input in temp folders, never the repo's real catalogs (`check:scenarios` checks those) | `test-tooling/scenarios/scan.toolingtest.ts` |
 
 - Folders start flat and are grouped only when an area grows:
   - Page objects move into a subfolder named after the app area once it has several pages,

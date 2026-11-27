@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { computeObligations } from './obligations';
 import type { Claim } from './scan';
-import type { CatalogFile, ScenarioRow } from './types';
+import type { CatalogFile, ScenarioRow } from '../types';
 
 function row(id: string, overrides: Partial<ScenarioRow> = {}): ScenarioRow {
   return {

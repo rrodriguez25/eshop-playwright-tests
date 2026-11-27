@@ -7,6 +7,8 @@ anyway. Check each state's snapshot against this list. Each entry is a case seen
 | --- | --- | --- |
 | **`aria-*` on an element with no role is dropped.** `aria-current`, `aria-disabled` on a `<span>` don't appear. | Current page number in the catalog pagination: `generic "5"`, no `[current]` | Scoped attribute selector (`pagination.locator('[aria-current="page"]')`) with a comment |
 | **Accessible names include live data.** | Filter options "AirStrider 2" (count changes with selection); sort combobox "Sort Name: A to Z" (changes with the choice) | Anchored regex from the escaped label: `^AirStrider \d+$`, `^Sort ` |
+| **`aria-label` overrides visible text.** | The cart's Remove button shows "Remove" but is named "Remove <product> from your bag" | The accessible name: `getByRole('button', { name: 'Remove … from your bag' })` |
+| **The page heading sits outside `main`.** | The hero h1 is rendered by `HeaderBar.razor`, so `main.getByRole('heading')` misses it | Locate it from `page`, not from `main` |
 | **Composite names on cards.** A link's name joins image alt, brand, name and price. | "Adventurer GPS Watch Solstix Adventurer GPS Watch $199.99" | `links.filter({ has: page.getByText(name, { exact: true }) })` |
 | **Names that aren't unique in the data.** | "Apex Climbing Harness" from two brands | Add a second filter (brand) as an optional argument |
 | **The same name in two regions with no role.** | "All" in both filter groups; "Clear all filters" in the panel and the empty state | Scope by the nearest landmark, else a class plus `filter({ has: heading })`, with a comment |
@@ -18,3 +20,4 @@ anyway. Check each state's snapshot against this list. Each entry is a case seen
 | **`<summary>` has no role.** It shows as `generic "Filters"`. | Filters panel toggle | `group.locator('summary')` with a comment |
 | **Transient states.** Streaming placeholders render before data arrives. | Catalog loading skeleton, `role="status"` "Loading products" | Map from source, mark Unverified |
 | **Navigation errors instead of a page.** A 4xx with an empty body fails in Chromium with `net::ERR_HTTP_RESPONSE_CODE_FAILURE`. | `/item/999999` returns 404 with no body, so the not-found branch never renders | Confirm with `curl`, mark Unverified, report as a suspected eShop bug |
+| **A logged-out visit to an `[Authorize]` page redirects.** It lands on Identity on another origin (port 5243) instead of rendering. | `/cart` logged out shows Identity's login form | Log in as a static user first (SKILL.md step 4) |

@@ -4,7 +4,7 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { env } from '../config/env';
-import { discoverEndpoints, discoverScreens, mergeSupplement, writeInventory } from '../test-tooling/inventory';
+import { discoverEndpoints, discoverScreens, mergeSupplement, writeInventory } from '../test-tooling/inventory/inventory';
 import { readModules } from '../test-tooling/modules';
 import {
   ENDPOINTS_FILE, MODULES_FILE, OPENAPI_DOCUMENTS, SCREENS_FILE, SUPPLEMENT_FILE, WEBAPP_PAGES_DIR, repoRelative,

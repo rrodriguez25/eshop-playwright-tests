@@ -22,7 +22,7 @@ one human checkpoint: approving which scenarios get tested.
 | Skill | Does | Status |
 | --- | --- | --- |
 | `discovering-scenarios` | Reads eShop's source and the running app; proposes rows for a module's scenario catalog (`test-tooling/scenarios/<module>.scenarios.json`, rules in [`scenario-catalog.md`](scenario-catalog.md)) for review | Planned |
-| `mapping-page-objects` | Maps a page into a page object from its source and the live page | Written; to be checked on a second page |
+| `mapping-page-objects` | Maps a page into a page object from its source and the live page | Written, tested once on the cart, revised |
 | `seeding-test-data` | Test data through fixtures and the API, unique names, cleanup | Planned |
 | `writing-ui-tests` | Browser scenario tests on top of page objects and seeded data | Planned |
 | `writing-api-tests` | API scenario and contract tests | Planned |
@@ -100,9 +100,14 @@ Source code wins on *what exists*; the live page wins on *how to locate it*.
 - Conventions: written (`docs/playwright-conventions.md`).
 - Tools: Playwright MCP in `.mcp.json`; eShop's source readable through
   `permissions.additionalDirectories` in `.claude/settings.local.json`.
-- Page objects: catalog (`HomePage`), item (`ItemPage`) and the header bar component (`HeaderBar`).
-- Skills: `mapping-page-objects`, written from mapping the catalog pages. Next: check that a fresh
-  agent maps the cart page correctly with it, and fix the skill where it doesn't.
+- Page objects: catalog (`HomePage`), item (`ItemPage`), cart (`CartPage`, mostly Unverified
+  until re-mapped with a test user) and the header bar component (`HeaderBar`).
+- Test data: static users (`data/users.json`) for logged-in reads; the `testUser` fixture for
+  tests that change a basket, orders or profile.
+- Skills: `mapping-page-objects`, written from mapping the catalog pages, then tested by a fresh
+  agent mapping the cart page and revised from that run (login-gated and stream-rendered pages,
+  inventory scope, probe checks, states confirmed as a test user). Next: a fresh agent re-maps the
+  cart with the revised skill and confirms its Unverified elements as a test user.
 - Scenario catalog: format, inventory, `claims()`, check and report in place
   (`docs/scenario-catalog.md`). One pilot catalog, `catalog`, written from the existing tests.
   Next: write `discovering-scenarios` from filling a second module's catalog.
