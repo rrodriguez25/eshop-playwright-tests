@@ -94,6 +94,8 @@ open, and a `cd` moves the working directory between them.
    out of the inventory, suspected eShop bugs, and any convention gap you had to decide on.
    Propose a rule for each gap rather than leaving a silent exception. Add the pages mapped to
    "Where things stand" in `docs/ai-workflow.md`.
+   Suspected bugs go in the report only; never run `pnpm bugs:add` or edit `data/bugs.json`.
+   Logging is for scenario discovery and test writing, once a bug is confirmed.
 
 ## Common mistakes
 
@@ -108,3 +110,4 @@ open, and a `cd` moves the working directory between them.
 | Changing a static user's basket to see a state | Create the state as `testUser` in the probe (step 6) |
 | Calling a locator verified because the snapshot looked right | Run it in the probe spec (step 6) |
 | A component method returning a page object | Circular import through `BasePage`; put the action in the page or `helpers/ui/` |
+| Logging a suspected eShop bug with `pnpm bugs:add` | List it in the report (step 9); discovery or test writing logs it once confirmed |
