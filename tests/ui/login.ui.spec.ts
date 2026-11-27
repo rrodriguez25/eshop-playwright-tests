@@ -30,6 +30,10 @@ test.describe('Logged-in header as a test user', () => {
     await homePage.verifyPageIsOpen();
     await homePage.header.verifyLoggedInAs(testUser.username);
   });
+
+  test('shares the static users password', async ({ testUser, staticCredentials }) => {
+    expect(testUser.password, 'test users log in with USER_PASSWORD, like static users').toBe(staticCredentials('alice').password);
+  });
 });
 
 test.describe('Per-worker login', () => {

@@ -303,6 +303,8 @@ export class CheckoutPage extends BasePage {
   with `test.use({ user })`. The user is written to identitydb (`helpers/setup/test-users.ts`)
   because eShop's Identity has no registration; this is the direct write §7 allows. Tests using
   it need the database settings in `.env`.
+- Every user, static or test-owned, logs in with `USER_PASSWORD`. Why: a person can sign in as
+  any user the suite made, and a user left behind by a crashed run is still usable.
 - Deleting a test user leaves what other services keep for them: the basket in Redis and orders
   in orderingdb, keyed by the user's id. They belong to a deleted user, so no test or person sees
   them again.

@@ -62,7 +62,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     if (user !== undefined) {
       throw new Error(`testUser: this test is also logged in as static user "${user}"; use one or the other`);
     }
-    const testUser = await createTestUser(db.identity);
+    const testUser = await createTestUser(db.identity, env.userPassword);
     try {
       const session = await identity.logIn(testUser);
       await context.addCookies(session.cookies);

@@ -3,8 +3,8 @@ import { findIdentityUserByUserName } from '../../helpers/db/identity';
 import { createTestUser, deleteTestUser } from '../../helpers/setup/test-users';
 
 test.describe('Test users', () => {
-  test('are created in identitydb and deleted again', async ({ db }) => {
-    const user = await createTestUser(db.identity);
+  test('are created in identitydb and deleted again', async ({ db, staticCredentials }) => {
+    const user = await createTestUser(db.identity, staticCredentials('alice').password);
 
     const created = await findIdentityUserByUserName(db.identity, user.username);
     await deleteTestUser(db.identity, user);

@@ -1,4 +1,4 @@
-import { randomBytes, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import type { Database } from '../../db/database';
 import { deleteIdentityUser, insertIdentityUser, type NewIdentityUser } from '../db/identity';
 import { uniqueName } from './unique';
@@ -22,14 +22,17 @@ export interface TestUser {
  * Creates a user that exists only for the calling test, for tests that change a user's basket,
  * orders or profile, or that need failed logins. eShop's Identity has no registration, so the user
  * is written to identitydb directly.
+ *
+ * `password` is the static users' shared `USER_PASSWORD`, passed in by the caller (helpers don't
+ * read config), so a person can sign in as any user with one password.
  */
-export async function createTestUser(db: Database): Promise<TestUser> {
+export async function createTestUser(db: Database, password: string): Promise<TestUser> {
   const username = uniqueName('test-user');
   const user: NewIdentityUser = {
     id: randomUUID(),
     userName: username,
     email: `${username}@example.com`,
-    password: randomPassword(),
+    password,
     phoneNumber: '4255550123',
     name: 'Test',
     lastName: 'Shopper',
@@ -66,11 +69,6 @@ export async function createTestUser(db: Database): Promise<TestUser> {
  */
 export async function deleteTestUser(db: Database, user: TestUser): Promise<void> {
   await deleteIdentityUser(db, user.id);
-}
-
-/** Meets Identity's default rules: 6+ characters with an upper, a lower, a digit and a symbol. */
-function randomPassword(): string {
-  return `Tu1!${randomBytes(12).toString('base64url')}`;
 }
 
 /** A card expiry two years from now, as MM/YY. */
