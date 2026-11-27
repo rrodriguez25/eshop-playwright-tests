@@ -1,9 +1,9 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import type { FullResult, Reporter, TestCase, TestResult } from '@playwright/test/reporter';
-import { KNOWN_BUGS_REPORT } from '../config/paths';
-import { bugs } from '../fixtures/known-bug';
-import { KnownBugCollector, listedRecords, summarizeKnownBugs, type KnownBugRecord } from './known-bugs-summary';
+import { KNOWN_BUGS_REPORT } from '../paths';
+import { bugs } from './known-bug';
+import { KnownBugCollector, listedRecords, summarizeKnownBugs, type KnownBugRecord } from './summary';
 
 /** What `KNOWN_BUGS_REPORT` holds after a run; read by `pnpm bugs:sync`. */
 export interface KnownBugsReport {

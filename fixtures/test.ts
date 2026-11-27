@@ -104,4 +104,4 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
 
 export { expect };
 export { claims } from '../test-tooling/scenarios/claims';
-export { knownBug } from './known-bug';
+export { knownBug } from '../test-tooling/bugs/known-bug';

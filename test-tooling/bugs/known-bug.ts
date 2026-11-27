@@ -1,5 +1,5 @@
 import { test } from '@playwright/test';
-import bugsJson from '../data/bugs.json';
+import bugsJson from './bugs.json';
 import { parseBugs, type BugEntry, type KnownBugOutcome } from './bug-list';
 
 /** The annotation type `knownBug` adds to a test, read by the known-bugs reporter. */
@@ -7,7 +7,7 @@ export const KNOWN_BUG_ANNOTATION = 'known-bug';
 
 export { KNOWN_BUG_OUTCOMES, parseBugs, type BugEntry, type KnownBugOutcome } from './bug-list';
 
-/** The id of a bug in `data/bugs.json`. A misspelled id doesn't compile. */
+/** The id of a bug in `test-tooling/bugs/bugs.json`. A misspelled id doesn't compile. */
 export type BugId = keyof typeof bugsJson;
 
 /**
@@ -23,7 +23,7 @@ export function createKnownBug<Id extends string>(bugs: Record<Id, BugEntry>) {
   return async (bugId: Id, callback: () => Promise<void>): Promise<void> => {
     const entry: BugEntry | undefined = Object.hasOwn(bugs, bugId) ? bugs[bugId] : undefined;
     if (entry === undefined) {
-      throw new Error(`Unknown bug id "${bugId}": add it to data/bugs.json first`);
+      throw new Error(`Unknown bug id "${bugId}": log it with pnpm bugs:add first`);
     }
     await test.step(`Known bug ${bugId}: ${entry.title}`, async () => {
       const errorsBefore = test.info().errors.length;
@@ -63,7 +63,7 @@ if (!hasEveryBugId(parsedBugs)) {
   throw new Error('bugs.json: parsed entries do not match the file');
 }
 
-/** The validated contents of `data/bugs.json`. */
+/** The validated contents of `test-tooling/bugs/bugs.json`. */
 export const bugs: Record<BugId, BugEntry> = parsedBugs;
 
 /**

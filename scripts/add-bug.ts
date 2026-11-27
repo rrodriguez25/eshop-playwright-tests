@@ -1,15 +1,12 @@
-/**
- * `pnpm bugs:add --title "…" --priority <high|medium|low> [--module …] [--found <mining|writing>]
- * [--expected …] [--actual …] [--source …]`: logs a known eShop bug in `data/bugs.json` as `open`,
- * under a new `issue-<today>-<5 random digits>` id, and prints the id for `knownBug('<id>', …)`.
- * Runs under plain Node, so imports carry `.ts`.
- */
+// Logs a known eShop bug in test-tooling/bugs/bugs.json as open, under a new
+// issue-<today>-<5 random digits> id, and prints the id for knownBug('<id>', …).
+// Usage: pnpm bugs:add --title "…" --priority <high|medium|low> [--module …]
+//   [--found <mining|writing>] [--expected …] [--actual …] [--source …]
+// Needs neither eShop nor .env.
 import { readFileSync, writeFileSync } from 'node:fs';
-import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { addBug, newBugId, parseBugs } from '../fixtures/bug-list.ts';
-
-const BUGS_FILE = path.join(path.resolve(import.meta.dirname, '..'), 'data', 'bugs.json');
+import { addBug, newBugId, parseBugs } from '../test-tooling/bugs/bug-list';
+import { BUGS_FILE } from '../test-tooling/paths';
 
 const { values } = parseArgs({
   options: {

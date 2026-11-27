@@ -1,10 +1,10 @@
 /**
- * The shape of `data/bugs.json`, its validation, and new entries. Only Node built-ins, so plain
- * Node can run it (`scripts/sync-bugs.ts`, `scripts/add-bug.ts`) as well as Playwright.
+ * The shape of `test-tooling/bugs/bugs.json`, its validation, and new entries. Pure: used by
+ * `knownBug`, the reporter, `pnpm bugs:add` and `pnpm bugs:sync`.
  */
 import { randomInt } from 'node:crypto';
 
-/** One known eShop bug from `data/bugs.json`. */
+/** One known eShop bug from `test-tooling/bugs/bugs.json`. */
 export interface BugEntry {
   title: string;
   priority: 'high' | 'medium' | 'low';

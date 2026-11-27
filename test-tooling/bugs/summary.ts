@@ -1,5 +1,5 @@
-import { KNOWN_BUG_OUTCOMES, type BugEntry, type KnownBugOutcome } from '../fixtures/bug-list';
-import { KNOWN_BUG_ANNOTATION } from '../fixtures/known-bug';
+import { KNOWN_BUG_OUTCOMES, type BugEntry, type KnownBugOutcome } from './bug-list';
+import { KNOWN_BUG_ANNOTATION } from './known-bug';
 
 /** One known bug's outcome in one test. */
 export interface KnownBugRecord {

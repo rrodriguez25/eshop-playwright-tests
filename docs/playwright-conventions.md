@@ -21,17 +21,15 @@ tests/  ──►  helpers/  ──►  pages/   api/   auth/   db/  ──►  
 | --- | --- | --- |
 | `tests/ui`, `tests/api`, `tests/db` | Specs: what is tested and what is expected. | Fixtures, helpers, page objects, API services |
 | `tests/preflight` | Checks that must pass before the suite runs (see [Before the suite](#before-the-suite)). | Same as specs |
-| `tests/suite` | Tests of the suite's own tooling, such as `knownBug` and its reporter. They need no running eShop. | Same as specs, plus `reporters/` |
 | `helpers/` | Reusable steps and utilities, by type (see [Helpers](#helpers)). | Page objects, API services, `db/`, `data/`, other helpers |
 | `pages/` | Page objects: locators, actions and verifications for one page. Components shared by pages in `pages/components/`. | `@playwright/test`, other page objects and components |
 | `api/` | One typed service class per eShop API, plus generated types. | `APIRequestContext` only |
 | `auth/` | Logging users in to eShop's Identity and holding their sessions. No user data, no SQL. | `@playwright/test` and Node built-ins only |
 | `db/` | Connections, queries, transactions. No eShop table knowledge. | `pg` only |
-| `data/` | Static test data as JSON, such as `users.json` and `bugs.json` (known eShop bugs). No secrets. | Nothing |
-| `reporters/` | Playwright reporters, such as the known-bugs summary. | `fixtures/known-bug.ts`, `config/` |
+| `data/` | Static test data as JSON, such as `users.json`. No secrets. | Nothing |
 | `fixtures/test.ts` | The `test`, `expect`, `claims` and `knownBug` every spec imports. | Everything above |
 | `config/env.ts` | Every environment variable the suite reads. | `process.env` |
-| `test-tooling/` | The scenario catalog: modules, screen and endpoint inventories, catalogs, `claims()`, and the code behind `check:scenarios` and `scenarios:report` (see [`scenario-catalog.md`](scenario-catalog.md)). Never imported by page objects, services or helpers. | `config/paths.ts`, Node built-ins, `typescript`, `ajv` |
+| `test-tooling/` | The scenario catalog (`scenarios/`, `inventory/`: modules, inventories, catalogs, `claims()`, the code behind `check:scenarios` and `scenarios:report`; see [`scenario-catalog.md`](scenario-catalog.md)) and known eShop bugs (`bugs/`: `bugs.json`, `knownBug()`, the known-bugs reporter, the code behind `bugs:add` and `bugs:sync`). Never imported by page objects, services or helpers. | `config/paths.ts`, Node built-ins, `typescript`, `ajv`, `@playwright/test` |
 
 - Specs contain no raw selectors, URLs, SQL or `process.env`.
 - Only `helpers/db` contains SQL or eShop table and column names. Why: they are eShop's internal
@@ -332,7 +330,7 @@ export class CheckoutPage extends BasePage {
   It is the one per-test tag. Claim only what the assertions check. Rules:
   [`scenario-catalog.md`](scenario-catalog.md).
 - No `test.only`. `test.skip` and `test.fixme` include a reason.
-- A known eShop bug is logged in `data/bugs.json` first, with
+- A known eShop bug is logged in `test-tooling/bugs/bugs.json` first, with
   `pnpm bugs:add --title "…" --priority <high|medium|low> [--module …] [--found <mining|writing>]
   [--expected …] [--actual …] [--source …]`, which prints its id. The test then wraps only the
   assertion that shows it: `await knownBug('<bug id>', async () => { … })`.
@@ -352,7 +350,7 @@ export class CheckoutPage extends BasePage {
   - Once a bug is `fixed` and a run reports its wrapper `stale`, remove the wrapper.
   - A run started with `--reporter=…` replaces the configured reporters and writes no summary.
   - After a run, `pnpm bugs:sync` suggests status changes and `pnpm bugs:sync --apply` writes
-    them. Review the diff of `data/bugs.json` like any other change. Tests never write to it.
+    them. Review the diff of `test-tooling/bugs/bugs.json` like any other change. Tests never write to it.
 
 ## 10. File organization and naming
 
@@ -365,8 +363,7 @@ export class CheckoutPage extends BasePage {
 | --- | --- | --- |
 | Spec | `tests/<layer>/<feature>.<layer>.spec.ts` | `tests/api/catalog.api.spec.ts` |
 | Preflight check | `tests/preflight/<check>.preflight.ts` | `tests/preflight/auth.preflight.ts` |
-| Suite test | `tests/suite/<tool>.suite.spec.ts` | `tests/suite/known-bug.suite.spec.ts` |
-| Reporter | `reporters/<name>-reporter.ts`, default export | `reporters/known-bugs-reporter.ts` |
+| Reporter | `test-tooling/<area>/reporter.ts`, default export | `test-tooling/bugs/reporter.ts` |
 | Static data | `data/<name>.json` | `data/users.json` |
 | Page object | `pages/<name>-page.ts`, class `<Name>Page` | `pages/home-page.ts`, class `HomePage` |
 | Component | `pages/components/<name>.ts`, class `<Name>`, named as in eShop's source | `pages/components/header-bar.ts`, class `HeaderBar` |
@@ -408,7 +405,6 @@ pnpm typecheck
 pnpm check:scenarios              # catalogs and claims
 pnpm test:tooling                 # when test-tooling/ changed
 pnpm test:<layer>                 # each project the change affects
-pnpm test:suite                   # when fixtures/known-bug.ts, reporters/ or scripts/ change
 pnpm exec playwright test <spec> --repeat-each=3   # new or changed tests
 ```
 

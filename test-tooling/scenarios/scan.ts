@@ -105,7 +105,7 @@ function describeMarks(callback: ts.Node | undefined): { skipped: boolean; known
     ts.isExpressionStatement(statement) ? [markerVariant(statement.expression)].filter((v) => v !== null) : []));
 }
 
-/** `knownBug('<bug id>', async () => { ... })`, the wrapper from `fixtures/known-bug.ts`. */
+/** `knownBug('<bug id>', async () => { ... })`, the wrapper from `test-tooling/bugs/known-bug.ts`. */
 const isKnownBugCall = (node: ts.Node): boolean =>
   ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 'knownBug';
 

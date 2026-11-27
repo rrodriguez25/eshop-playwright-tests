@@ -11,8 +11,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "noEmit": true,
-    "allowImportingTsExtensions": true
+    "noEmit": true
   },
-  "include": ["playwright.config.ts", "api/**/*.ts", "auth/**/*.ts", "config/**/*.ts", "db/**/*.ts","fixtures/**/*.ts", "pages/**/*.ts", "helpers/**/*.ts", "reporters/**/*.ts", "tests/**/*.ts", "test-tooling/**/*.ts", "scripts/**/*.ts"]
+  "include": ["playwright.config.ts", "api/**/*.ts", "auth/**/*.ts", "config/**/*.ts", "db/**/*.ts","fixtures/**/*.ts", "pages/**/*.ts", "helpers/**/*.ts", "tests/**/*.ts", "test-tooling/**/*.ts", "scripts/**/*.ts"]
 }

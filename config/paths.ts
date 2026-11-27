@@ -11,6 +11,3 @@ export const ENV_FILE = path.join(REPO_ROOT, '.env');
 
 /** Where each worker saves its logged-in sessions. Ignored by git: the files hold login cookies. */
 export const SESSION_DIR = path.join(REPO_ROOT, '.auth');
-
-/** Known-bug outcomes of the last run, written by the known-bugs reporter and read by `pnpm bugs:sync`. */
-export const KNOWN_BUGS_REPORT = path.join(REPO_ROOT, 'test-results', 'known-bugs.json');

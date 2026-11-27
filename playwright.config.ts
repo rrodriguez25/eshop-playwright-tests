@@ -10,8 +10,8 @@ export default defineConfig({
   retries: isCI ? 2 : 0,
   workers: isCI ? 2 : undefined,
   reporter: isCI
-    ? [['blob'], ['github'], ['./reporters/known-bugs-reporter.ts']]
-    : [['list'], ['html', { open: 'never' }], ['./reporters/known-bugs-reporter.ts']],
+    ? [['blob'], ['github'], ['./test-tooling/bugs/reporter.ts']]
+    : [['list'], ['html', { open: 'never' }], ['./test-tooling/bugs/reporter.ts']],
   use: {
     baseURL: env.baseUrl,
     ignoreHTTPSErrors: true,
@@ -26,12 +26,6 @@ export default defineConfig({
     {
       name: 'db',
       testDir: './tests/db',
-    },
-    {
-      // Tests of the suite's own tooling, such as knownBug and its reporter. Needs no running eShop.
-      name: 'suite',
-      testDir: './tests/suite',
-      testMatch: /.*\.suite\.spec\.ts/,
     },
     {
       // Checks run before the suite. No retries: each retry of a wrong password counts toward

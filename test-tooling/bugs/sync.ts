@@ -1,9 +1,22 @@
-/**
- * What `pnpm bugs:sync` suggests and applies to `data/bugs.json` after a run. Only type imports,
- * so plain Node can run it from `scripts/sync-bugs.ts`.
- */
-import type { BugEntry } from '../fixtures/bug-list';
-import type { KnownBugRecord } from './known-bugs-summary';
+/** What `pnpm bugs:sync` suggests and applies to `test-tooling/bugs/bugs.json` after a run. */
+import { KNOWN_BUG_OUTCOMES, isRecord, type BugEntry } from './bug-list';
+import type { KnownBugRecord } from './summary';
+
+/** The known-bugs report a run leaves behind, validated. Throws with what is wrong. */
+export function parseKnownBugsReport(raw: unknown): { status: string; records: KnownBugRecord[] } {
+  if (!isRecord(raw) || typeof raw.status !== 'string' || !Array.isArray(raw.records)) {
+    throw new Error('not a known-bugs report: expected { status, records }');
+  }
+  const records: KnownBugRecord[] = [];
+  for (const item of raw.records) {
+    const outcome = isRecord(item) ? KNOWN_BUG_OUTCOMES.find(option => option === item.outcome) : undefined;
+    if (!isRecord(item) || typeof item.bugId !== 'string' || typeof item.test !== 'string' || outcome === undefined) {
+      throw new Error(`invalid record in the known-bugs report: ${JSON.stringify(item)}`);
+    }
+    records.push({ bugId: item.bugId, outcome, test: item.test });
+  }
+  return { status: raw.status, records };
+}
 
 export type BugSuggestion = {
   bugId: string;
