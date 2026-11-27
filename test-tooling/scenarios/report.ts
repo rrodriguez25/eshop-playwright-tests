@@ -5,7 +5,7 @@
  */
 import type { CheckResult } from './check';
 import type { Obligation, ObligationState } from './obligations';
-import { LAYERS, type Layer, type ModuleEntry, type ScenarioRow } from './types';
+import { LAYERS, type Layer, type ModuleEntry, type ScenarioRow } from '../types';
 
 export interface LayerSummary {
   owed: number;

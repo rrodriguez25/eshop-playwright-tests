@@ -3,9 +3,9 @@ import { copyFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { catalogReferenceProblems, loadCatalogs } from './catalog';
-import { SCENARIOS_DIR, SCHEMA_FILE } from './paths';
-import { makeTempDir, writeTempFile } from './test-support';
-import type { Inventory, ModuleEntry, Problem, ScenarioRow } from './types';
+import { SCHEMA_FILE } from '../paths';
+import { makeTempDir, writeTempFile } from '../test-support';
+import type { Inventory, ModuleEntry, Problem, ScenarioRow } from '../types';
 
 const MODULES: ModuleEntry[] = [
   { id: 'catalog', name: 'Catalog', prefix: 'CAT', screenSources: [], endpointPrefixes: [] },
@@ -169,12 +169,13 @@ test("warns on a row naming another module's screen", () => {
   assert.match(problems[0]?.message ?? '', /basket/);
 });
 
-test('loads the committed scenarios folder with no problems', () => {
-  const { problems } = loadCatalogs(SCENARIOS_DIR, SCHEMA_FILE, [
-    ...MODULES,
-    { id: 'ordering', name: 'Ordering', prefix: 'ORD', screenSources: [], endpointPrefixes: [] },
-    { id: 'identity', name: 'Identity', prefix: 'IDN', screenSources: [], endpointPrefixes: [] },
-  ]);
+test('ignores code and its self-tests beside the catalogs', () => {
+  const { catalogs, problems } = load({
+    'catalog.scenarios.json': catalog([row()]),
+    'catalog.ts': 'export const x = 1;\n',
+    'catalog.toolingtest.ts': 'export {};\n',
+  });
 
   assert.deepEqual(problems, []);
+  assert.equal(catalogs.length, 1);
 });

@@ -8,7 +8,7 @@
  * blocked when only known-bug tests claim it, and missing otherwise. See docs/scenario-catalog.md.
  */
 import type { Claim } from './scan';
-import { LAYERS, type CatalogFile, type Layer, type ScenarioRow } from './types';
+import { LAYERS, type CatalogFile, type Layer, type ScenarioRow } from '../types';
 
 export type ObligationState = 'covered' | 'blocked' | 'missing';
 

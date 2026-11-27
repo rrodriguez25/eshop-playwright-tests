@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { layerOfSpec, scanSpecs } from './scan';
-import { makeTempDir, writeTempFile } from './test-support';
+import { makeTempDir, writeTempFile } from '../test-support';
 
 /** Writes the given specs into a temp repo and scans its tests/ folder. */
 function scan(specs: Record<string, string>) {

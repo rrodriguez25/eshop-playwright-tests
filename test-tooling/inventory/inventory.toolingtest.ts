@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { discoverEndpoints, discoverScreens, mergeSupplement, readInventory, routeToScreenRoute } from './inventory';
-import { makeTempDir, writeTempFile } from './test-support';
-import type { ModuleEntry } from './types';
+import { makeTempDir, writeTempFile } from '../test-support';
+import type { ModuleEntry } from '../types';
 
 const MODULES: ModuleEntry[] = [
   { id: 'catalog', name: 'Catalog', prefix: 'CAT', screenSources: ['Catalog', 'Item'], endpointPrefixes: ['/api/catalog'] },

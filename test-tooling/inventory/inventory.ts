@@ -7,9 +7,9 @@
  */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { isRecord, isStringList, readJson } from './json';
-import { repoRelative } from './paths';
-import { SCREEN_APPS, type EndpointItem, type Inventory, type ModuleEntry, type Problem, type ScreenApp, type ScreenItem } from './types';
+import { isRecord, isStringList, readJson } from '../json';
+import { repoRelative } from '../paths';
+import { SCREEN_APPS, type EndpointItem, type Inventory, type ModuleEntry, type Problem, type ScreenApp, type ScreenItem } from '../types';
 
 const HTTP_METHODS = ['get', 'put', 'post', 'delete', 'patch', 'head', 'options'];
 const PAGE_DIRECTIVE = /^﻿?\s*@page\s+"([^"]+)"/;

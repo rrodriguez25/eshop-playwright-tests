@@ -24,7 +24,10 @@ pnpm test:tooling                  # the tooling's own tests
 | `test-tooling/scenarios/_template.scenarios.json` | One example row to copy. Files starting with `_` are never read as catalogs |
 | `test-tooling/inventory/screens.json`, `endpoints.json` | Every screen and endpoint a row may name. Generated, committed, never edited by hand |
 | `test-tooling/inventory/supplement.json` | The few screens and endpoints no router or OpenAPI document lists (Identity's account pages), each with its eShop `file:line` |
-| `test-tooling/*.ts` | Loading, scanning specs, obligations, the check and the report. `scripts/` holds the commands |
+| `test-tooling/scenarios/*.ts` | Loading catalogs, `claims()`, scanning specs, obligations, the check and the report |
+| `test-tooling/inventory/inventory.ts` | Discovering screens and endpoints, reading and writing the inventory |
+| `test-tooling/*.ts` | Shared by both: types, paths, the module list reader, JSON and printing helpers |
+| `*.toolingtest.ts` | The tooling's own tests, beside the code they test (`pnpm test:tooling`). They check the rules on fake input; `check:scenarios` checks the real files. `scripts/` holds the commands |
 
 ## A row
 

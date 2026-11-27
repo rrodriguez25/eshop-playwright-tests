@@ -345,7 +345,8 @@ export class CheckoutPage extends BasePage {
 | Doc | `docs/<topic>.md` | `docs/playwright-conventions.md` |
 | Scenario catalog | `test-tooling/scenarios/<module>.scenarios.json`, `<module>` an id in `test-tooling/modules.json` | `test-tooling/scenarios/catalog.scenarios.json` |
 | Scenario row id | `<PREFIX>-<GROUP>-<SLUG>`, permanent | `CAT-READ-FILTER-NAME-PREFIX` |
-| Tooling self-test | `test-tooling/<name>.test.ts`, run by `pnpm test:tooling` | `test-tooling/scan.test.ts` |
+| Tooling code | `test-tooling/<area>/<name>.ts` by feature (`scenarios/`, `inventory/`); shared files at `test-tooling/` root | `test-tooling/scenarios/scan.ts` |
+| Tooling self-test | `<name>.toolingtest.ts` beside the code it tests, run by `pnpm test:tooling`. Tests the tooling's rules on fake input in temp folders, never the repo's real catalogs (`check:scenarios` checks those) | `test-tooling/scenarios/scan.toolingtest.ts` |
 
 - Folders start flat and are grouped only when an area grows:
   - Page objects move into a subfolder named after the app area once it has several pages,

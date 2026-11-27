@@ -4,7 +4,7 @@ import type { CheckResult } from './check';
 import { computeObligations } from './obligations';
 import { buildModuleReport, formatModuleReport, formatOverview } from './report';
 import type { Claim } from './scan';
-import type { CatalogFile, Inventory, ModuleEntry, ScenarioRow } from './types';
+import type { CatalogFile, Inventory, ModuleEntry, ScenarioRow } from '../types';
 
 const MODULES: ModuleEntry[] = ['catalog', 'basket', 'ordering', 'identity'].map((id) => ({
   id, name: id[0]?.toUpperCase() + id.slice(1), prefix: id.slice(0, 3).toUpperCase(), screenSources: [], endpointPrefixes: [],

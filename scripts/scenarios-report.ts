@@ -1,8 +1,8 @@
 // Lists catalog rows, the tests that claim them, and covered, blocked and missing obligations.
 // Usage: pnpm scenarios:report [module] [--json]. Without a module: one summary line per module and layer.
 // It reads spec source, not test results, and exits 1 only for an unknown module.
-import { buildModuleReport, formatModuleReport, formatOverview } from '../test-tooling/report';
-import { checkRepository } from '../test-tooling/repo-check';
+import { buildModuleReport, formatModuleReport, formatOverview } from '../test-tooling/scenarios/report';
+import { checkRepository } from '../test-tooling/scenarios/repo-check';
 
 const args = process.argv.slice(2);
 const json = args.includes('--json');
