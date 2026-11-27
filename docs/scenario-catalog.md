@@ -107,7 +107,7 @@ Each owed row and layer is in one of three states:
 | State | Means |
 | --- | --- |
 | covered | a test on that layer claims it, and that test runs and isn't a known eShop bug |
-| blocked | the only tests claiming it document a known eShop bug: they call `knownBug('<bug id>', …)` (see `test-tooling/bugs/bugs.json`) |
+| blocked | the only tests claiming it document a known eShop bug: they call `knownBug('<bug id>', …)` (see `data/bugs.json`) |
 | missing | no test on that layer claims it, or only skipped ones do |
 
 Missing is normal: rows are written before their tests, and the report is how the gap shows. A

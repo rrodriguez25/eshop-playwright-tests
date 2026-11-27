@@ -1,4 +1,4 @@
-// Compares the last run's known-bug outcomes with test-tooling/bugs/bugs.json and prints the
+// Compares the last run's known-bug outcomes with data/bugs.json and prints the
 // suggested changes. Usage: pnpm bugs:sync [--apply]. With --apply, writes the status changes;
 // review the diff like any other change. Needs neither eShop nor .env.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';

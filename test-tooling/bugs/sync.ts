@@ -1,4 +1,4 @@
-/** What `pnpm bugs:sync` suggests and applies to `test-tooling/bugs/bugs.json` after a run. */
+/** What `pnpm bugs:sync` suggests and applies to `data/bugs.json` after a run. */
 import { KNOWN_BUG_OUTCOMES, isRecord, type BugEntry } from './bug-list';
 import type { KnownBugRecord } from './summary';
 

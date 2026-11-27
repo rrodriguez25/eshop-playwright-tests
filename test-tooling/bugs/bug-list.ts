@@ -1,10 +1,10 @@
 /**
- * The shape of `test-tooling/bugs/bugs.json`, its validation, and new entries. Pure: used by
+ * The shape of `data/bugs.json`, its validation, and new entries. Pure: used by
  * `knownBug`, the reporter, `pnpm bugs:add` and `pnpm bugs:sync`.
  */
 import { randomInt } from 'node:crypto';
 
-/** One known eShop bug from `test-tooling/bugs/bugs.json`. */
+/** One known eShop bug from `data/bugs.json`. */
 export interface BugEntry {
   title: string;
   priority: 'high' | 'medium' | 'low';

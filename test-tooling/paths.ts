@@ -22,7 +22,7 @@ export const SUPPLEMENT_FILE = path.join(INVENTORY_DIR, 'supplement.json');
 
 export const BUGS_DIR = path.join(TOOLING_DIR, 'bugs');
 /** Known eShop bugs. Written by `pnpm bugs:add` and `pnpm bugs:sync --apply`, never by tests. */
-export const BUGS_FILE = path.join(BUGS_DIR, 'bugs.json');
+export const BUGS_FILE = path.join(REPO_ROOT, 'data', 'bugs.json');
 /** Known-bug outcomes of the last run, written by the known-bugs reporter and read by `pnpm bugs:sync`. */
 export const KNOWN_BUGS_REPORT = path.join(REPO_ROOT, 'test-results', 'known-bugs.json');
 

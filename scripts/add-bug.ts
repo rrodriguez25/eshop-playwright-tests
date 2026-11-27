@@ -1,4 +1,4 @@
-// Logs a known eShop bug in test-tooling/bugs/bugs.json as open, under a new
+// Logs a known eShop bug in data/bugs.json as open, under a new
 // issue-<today>-<5 random digits> id, and prints the id for knownBug('<id>', …).
 // Usage: pnpm bugs:add --title "…" --priority <high|medium|low> [--module …]
 //   [--found <mining|writing>] [--expected …] [--actual …] [--source …]
