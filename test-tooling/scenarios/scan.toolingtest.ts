@@ -48,6 +48,20 @@ test('returns 400', claims('CAT-VAL-NAME', 'api'), async () => {
   assert.equal(claims[0]?.knownBug, true);
 });
 
+test('marks a knownBug(...) call inside the body as knownBug', () => {
+  const { claims } = scan({
+    'tests/api/a.api.spec.ts': `${HEADER}
+test('returns 400', claims('CAT-VAL-NAME', 'api'), async ({ catalog }) => {
+  await knownBug('issue-2026-11-25-35712', async () => {
+    await expect(catalog.create()).rejects.toThrow('-> 400');
+  });
+});
+`,
+  });
+
+  assert.equal(claims[0]?.knownBug, true);
+});
+
 test('marks test.fail(title, claims(...), fn) as knownBug', () => {
   const { claims } = scan({
     'tests/api/a.api.spec.ts': `${HEADER}test.fail('returns 400', claims('CAT-VAL-NAME', 'api'), async () => {});\n`,

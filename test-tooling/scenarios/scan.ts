@@ -16,7 +16,7 @@ export interface Claim {
   title: string;
   ids: string[];
   layer: Layer;
-  /** The test is `test.fail`, or its body calls `test.fail(...)`: it documents a known eShop bug. */
+  /** The test is `test.fail`, or its body calls `test.fail(...)` or `knownBug(...)`: it documents a known eShop bug. */
   knownBug: boolean;
   /** `test.skip` or `test.fixme`: the test does not run. */
   skipped: boolean;
@@ -105,12 +105,17 @@ function describeMarks(callback: ts.Node | undefined): { skipped: boolean; known
     ts.isExpressionStatement(statement) ? [markerVariant(statement.expression)].filter((v) => v !== null) : []));
 }
 
-/** Markers called anywhere in a test's body. */
+/** `knownBug('<bug id>', async () => { ... })`, the wrapper from `test-tooling/bugs/known-bug.ts`. */
+const isKnownBugCall = (node: ts.Node): boolean =>
+  ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 'knownBug';
+
+/** Markers called anywhere in a test's body. A `knownBug(...)` call counts as `test.fail`. */
 function bodyMarks(body: ts.Node): { skipped: boolean; knownBug: boolean } {
   const found: string[] = [];
   const visit = (node: ts.Node) => {
     const variant = markerVariant(node);
     if (variant) found.push(variant);
+    if (isKnownBugCall(node)) found.push('fail');
     ts.forEachChild(node, visit);
   };
   visit(body);

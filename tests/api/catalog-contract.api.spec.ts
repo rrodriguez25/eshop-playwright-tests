@@ -1,4 +1,4 @@
-import { claims, expect, test } from '../../fixtures/test';
+import { claims, expect, knownBug, test } from '../../fixtures/test';
 import { ContractError, ContractValidator, type OpenApiDocument } from '../../api/contract';
 import catalogV1 from '../../api/generated/catalog.v1.openapi.json';
 import { createCatalogItem } from '../../helpers/api/catalog';
@@ -58,9 +58,10 @@ test.describe('Catalog API contract', { tag: '@contract' }, () => {
     });
 
     test('POST /items without a name returns the documented 400', claims('CAT-VAL-CREATE-NO-NAME', 'api'), async ({ catalog }) => {
-      test.fail(true, 'eShop bug: a missing name fails in the database and returns an undocumented 500');
-
-      await expect(catalog.createItem({ name: undefined } as never, 1)).rejects.toThrow('POST /api/catalog/items -> 400');
+      // Known bug: a missing name fails in the database and returns an undocumented 500.
+      await knownBug('issue-2026-11-25-35712', async () => {
+        await expect(catalog.createItem({ name: undefined } as never, 1)).rejects.toThrow('POST /api/catalog/items -> 400');
+      });
     });
   });
 });

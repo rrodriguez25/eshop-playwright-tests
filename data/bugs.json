@@ -1,0 +1,32 @@
+{
+  "issue-2026-11-25-49350": {
+    "title": "A missing item returns 404 with an empty body, so the not-found message never renders",
+    "priority": "medium",
+    "status": "open",
+    "module": "item",
+    "found": "mining",
+    "expected": "\"Sorry, we couldn't find any such product.\" on /item/<missing id>",
+    "actual": "HTTP 404, empty body; Chromium shows net::ERR_HTTP_RESPONSE_CODE_FAILURE",
+    "source": "src/WebApp/Components/Pages/Item/ItemPage.razor"
+  },
+  "issue-2026-11-25-35712": {
+    "title": "POST /api/catalog/items without a name fails in the database and returns an undocumented 500",
+    "priority": "medium",
+    "status": "open",
+    "module": "catalog",
+    "found": "writing",
+    "expected": "400, as the Catalog API's OpenAPI document says",
+    "actual": "500, undocumented: the missing name fails in the database",
+    "source": "src/Catalog.API/Apis/CatalogApi.cs"
+  },
+  "issue-2026-11-25-33827": {
+    "title": "Identity's login page requests bootstrap and jquery files that return 404",
+    "priority": "low",
+    "status": "open",
+    "module": "identity",
+    "found": "mining",
+    "expected": "The login page's stylesheets and scripts load",
+    "actual": "404 for /lib/bootstrap/dist/css/bootstrap.min.css, /lib/bootstrap/dist/js/bootstrap.bundle.min.js and /lib/jquery/dist/jquery.slim.min.js",
+    "source": "src/Identity.API/Views/Shared/_Layout.cshtml"
+  }
+}

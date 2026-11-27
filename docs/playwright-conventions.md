@@ -26,10 +26,10 @@ tests/  ──►  helpers/  ──►  pages/   api/   auth/   db/  ──►  
 | `api/` | One typed service class per eShop API, plus generated types. | `APIRequestContext` only |
 | `auth/` | Logging users in to eShop's Identity and holding their sessions. No user data, no SQL. | `@playwright/test` and Node built-ins only |
 | `db/` | Connections, queries, transactions. No eShop table knowledge. | `pg` only |
-| `data/` | Static test data as JSON, such as `users.json`. No secrets. | Nothing |
-| `fixtures/test.ts` | The `test`, `expect` and `claims` every spec imports. | Everything above |
+| `data/` | Static test data as JSON, such as `users.json`, and `bugs.json`: every known eShop bug, open or fixed, kept here so it's easy to find. No secrets. | Nothing |
+| `fixtures/test.ts` | The `test`, `expect`, `claims` and `knownBug` every spec imports. | Everything above |
 | `config/env.ts` | Every environment variable the suite reads. | `process.env` |
-| `test-tooling/` | The scenario catalog: modules, screen and endpoint inventories, catalogs, `claims()`, and the code behind `check:scenarios` and `scenarios:report` (see [`scenario-catalog.md`](scenario-catalog.md)). Never imported by page objects, services or helpers. | `config/paths.ts`, Node built-ins, `typescript`, `ajv` |
+| `test-tooling/` | The scenario catalog (`scenarios/`, `inventory/`: modules, inventories, catalogs, `claims()`, the code behind `check:scenarios` and `scenarios:report`; see [`scenario-catalog.md`](scenario-catalog.md)) and the code for known eShop bugs (`bugs/`: `knownBug()`, the known-bugs reporter, the code behind `bugs:add` and `bugs:sync`; the list itself is `data/bugs.json`). Never imported by page objects, services or helpers. | `config/paths.ts`, `data/bugs.json`, Node built-ins, `typescript`, `ajv`, `@playwright/test` |
 
 - Specs contain no raw selectors, URLs, SQL or `process.env`.
 - Only `helpers/db` contains SQL or eShop table and column names. Why: they are eShop's internal
@@ -330,9 +330,27 @@ export class CheckoutPage extends BasePage {
   It is the one per-test tag. Claim only what the assertions check. Rules:
   [`scenario-catalog.md`](scenario-catalog.md).
 - No `test.only`. `test.skip` and `test.fixme` include a reason.
-- A known eShop bug is marked `test.fail(true, 'eShop bug: <what is wrong>')` in the test that
-  exposes it. Why: the suite stays green while the bug exists, and the test starts failing the day
-  eShop fixes it, which says the marker can come off.
+- A known eShop bug is logged in `data/bugs.json` first, with
+  `pnpm bugs:add --title "…" --priority <high|medium|low> [--module …] [--found <mining|writing>]
+  [--expected …] [--actual …] [--source …]`, which prints its id. The test then wraps only the
+  assertion that shows it: `await knownBug('<bug id>', async () => { … })`.
+  - The id is `issue-<year>-<month>-<day>-<5 random digits>`: the date the bug was logged, such as
+    `issue-2026-11-25-49350`. `bugs:add` makes it; never write one by hand. Loading `bugs.json`
+    rejects any other id. Ids carry no meaning, so put a one-line comment naming the bug above
+    each `knownBug` call.
+  - While the bug is `open`, a failure there becomes an expected failure.
+  - After each run, the known-bugs reporter prints which bugs are still present, look fixed, are
+    back after a fix, or have stale wrappers.
+
+  Why: the run stays green while the bug exists, the day eShop fixes it shows up in the summary,
+  and nothing else in the test is excused.
+  - Put `knownBug` last in a test, or give the bug its own test: nothing after a present bug runs.
+    A failure earlier in the test is never excused, but a fixture teardown or `afterEach` that
+    fails after a present bug is reported as expected too. One more reason for a test of its own.
+  - Once a bug is `fixed` and a run reports its wrapper `stale`, remove the wrapper.
+  - A run started with `--reporter=…` replaces the configured reporters and writes no summary.
+  - After a run, `pnpm bugs:sync` suggests status changes and `pnpm bugs:sync --apply` writes
+    them. Review the diff of `data/bugs.json` like any other change. Tests never write to it.
 
 ## 10. File organization and naming
 
@@ -345,6 +363,7 @@ export class CheckoutPage extends BasePage {
 | --- | --- | --- |
 | Spec | `tests/<layer>/<feature>.<layer>.spec.ts` | `tests/api/catalog.api.spec.ts` |
 | Preflight check | `tests/preflight/<check>.preflight.ts` | `tests/preflight/auth.preflight.ts` |
+| Reporter | `test-tooling/<area>/reporter.ts`, default export | `test-tooling/bugs/reporter.ts` |
 | Static data | `data/<name>.json` | `data/users.json` |
 | Page object | `pages/<name>-page.ts`, class `<Name>Page` | `pages/home-page.ts`, class `HomePage` |
 | Component | `pages/components/<name>.ts`, class `<Name>`, named as in eShop's source | `pages/components/header-bar.ts`, class `HeaderBar` |
@@ -365,7 +384,8 @@ export class CheckoutPage extends BasePage {
     as `catalogItem`) and `db-fixtures.ts`. `fixtures/test.ts` combines them with `mergeTests` and
     stays the only file specs import. Repeated fixture shapes get a factory in
     `fixtures/factory.ts` (`pageFixture`, `apiServiceFixture`).
-- Named exports only.
+- Named exports only. Exception: a reporter's class is its file's default export, because
+  Playwright loads reporters that way.
 - TypeScript is `strict` with `noUncheckedIndexedAccess`. Avoid `!` and `as`; prefer a check that
   throws with a clear message.
 
