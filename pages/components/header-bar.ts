@@ -30,9 +30,8 @@ export class HeaderBar {
   readonly myOrdersLink: Locator;
   readonly logOutButton: Locator;
   /**
-   * "Shopping bag" when the bag is empty, "Shopping bag, 3 items" otherwise.
-   * Unverified: the name with a count is from CartMenu.razor, which renders it only when the
-   * bag has items.
+   * "Shopping bag" when the bag is empty, "Shopping bag, 1 item" or "Shopping bag, 3 items"
+   * otherwise; the count badge shows 99+ above 99.
    */
   readonly shoppingBagLink: Locator;
 

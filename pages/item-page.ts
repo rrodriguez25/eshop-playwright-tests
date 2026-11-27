@@ -39,7 +39,7 @@ export class ItemPage extends BasePage<{ itemId: number }> {
   readonly addToBagButton: Locator;
   /** Rendered only when logged out; takes the shopper to the login page. */
   readonly logInToPurchaseButton: Locator;
-  // Unverified: from ItemPage.razor, renders only when logged in and this item is already in the shopping bag.
+  /** "1 in your shopping bag". Rendered only when logged in and this item is already in the bag. */
   readonly inBagNotice: Locator;
   // Unverified: from ItemPage.razor, inside inBagNotice; renders under the same condition.
   readonly inBagShoppingBagLink: Locator;

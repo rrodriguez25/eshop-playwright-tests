@@ -8,8 +8,9 @@ Paths are relative to `C:\GitHub\eShop\src`. The clone is read-only.
 | Components a page uses | `WebApp/Components/` and `WebAppComponents/` | Tags in the page (`<CatalogSearch>`) → `find -name 'CatalogSearch.razor'` |
 | The page heading and subtitle | `WebApp/Components/Layout/HeaderBar.razor` | Pages fill them with `<SectionContent SectionName="page-header-title">` |
 | Header, footer, layout | `WebApp/Components/Layout/` (`MainLayout`, `HeaderBar`, `UserMenu`, `CartMenu`, `FooterBar`) | Already mapped: `pages/components/header-bar.ts` |
-| Behavior added by scripts (sorting, zoom, quantity steppers, chat) | `WebApp/wwwroot/js/*.js` | Grep the page's `data-*` attributes in `wwwroot/js` |
+| Behavior added by scripts (sorting, zoom, quantity steppers, chat) | `WebApp/wwwroot/js/*.js` | Grep the page's `data-*` attributes in `wwwroot/js`: `data-cart-quantity-input` → `cart-quantity.js` |
 | How a panel or menu opens without a script | `<Component>.razor.css` next to the component | Look for `:hover`, `:focus-within`, `[open]` |
+| Login required; content streamed in | `@attribute [Authorize]`, `@attribute [StreamRendering]` at the top of the page | Read the page's first lines; the cart has both |
 | Auth-dependent markup | `<AuthorizeView>` in the component; `HttpContext.User` checks in `@code` | |
 | Login page | `Identity.API` (a separate app on its own port, not the web app) | `Identity.API/Views/Account/` |
 | Seeded users | `Identity.API/UsersSeed.cs` | |

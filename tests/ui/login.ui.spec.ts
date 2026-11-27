@@ -23,6 +23,19 @@ test.describe('Logged-in header as bob', () => {
   });
 });
 
+test.describe('Logged-in header as a test user', () => {
+  test('shows the test user in the account menu', async ({ homePage, testUser }) => {
+    await homePage.goto();
+
+    await homePage.verifyPageIsOpen();
+    await homePage.header.verifyLoggedInAs(testUser.username);
+  });
+
+  test('shares the static users password', async ({ testUser, staticCredentials }) => {
+    expect(testUser.password, 'test users log in with USER_PASSWORD, like static users').toBe(staticCredentials('alice').password);
+  });
+});
+
 test.describe('Per-worker login', () => {
   // A worker logs in several users with one client. If the first user's Identity cookie carried
   // over, the second login would skip Identity's form and fail at its first step.

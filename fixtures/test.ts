@@ -9,6 +9,7 @@ import { SESSION_DIR } from '../config/paths';
 import { DbClient } from '../db/db-client';
 import { createCatalogItem, type CreatedCatalogItem } from '../helpers/api/catalog';
 import { staticUser, type StaticUserKey } from '../helpers/setup/static-users';
+import { createTestUser, deleteTestUser, type TestUser } from '../helpers/setup/test-users';
 import { CartPage } from '../pages/cart-page';
 import { HomePage } from '../pages/home-page';
 import { ItemPage } from '../pages/item-page';
@@ -30,6 +31,11 @@ type TestFixtures = {
   catalogItem: CreatedCatalogItem;
   /** The static user the browser is logged in as: `test.use({ user: 'alice' })`. None by default. */
   user: StaticUserKey | undefined;
+  /**
+   * A user created for this test, with the browser logged in as them; deleted after the test.
+   * For tests that change the basket, orders or profile. Needs the database settings in `.env`.
+   */
+  testUser: TestUser;
 };
 
 type WorkerFixtures = {
@@ -51,6 +57,19 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
   user: [undefined, { option: true }],
   storageState: async ({ user, sessions, staticCredentials, storageState }, use) => {
     await use(user === undefined ? storageState : await sessions.sessionFile(user, staticCredentials(user)));
+  },
+  testUser: async ({ user, db, identity, context }, use) => {
+    if (user !== undefined) {
+      throw new Error(`testUser: this test is also logged in as static user "${user}"; use one or the other`);
+    }
+    const testUser = await createTestUser(db.identity, env.userPassword);
+    try {
+      const session = await identity.logIn(testUser);
+      await context.addCookies(session.cookies);
+      await use(testUser);
+    } finally {
+      await deleteTestUser(db.identity, testUser);
+    }
   },
   api: async ({ playwright }, use) => {
     const context = await playwright.request.newContext({
