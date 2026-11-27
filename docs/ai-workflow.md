@@ -13,7 +13,7 @@ one human checkpoint: approving which scenarios get tested.
 
 - Skills follow the conventions and never restate or override them.
 - Each skill does one job. A larger skill refers to a smaller one instead of copying it
-  (`writing-ui-tests`: "if the page object doesn't exist, use `mapping-page-objects`").
+  (`test-writer`: "if the page object doesn't have what the test needs, use `mapping-page-objects`").
 - Agents differ in what they are allowed to do, not only in their instructions. That is what
   makes delegating safe.
 
@@ -21,13 +21,11 @@ one human checkpoint: approving which scenarios get tested.
 
 | Skill | Does | Status |
 | --- | --- | --- |
-| `discovering-scenarios` | Reads eShop's source and the running app; proposes rows for a module's scenario catalog (`test-tooling/scenarios/<module>.scenarios.json`, rules in [`scenario-catalog.md`](scenario-catalog.md)) for review | Planned |
-| `mapping-page-objects` | Maps a page into a page object from its source and the live page | Written, tested once on the cart, revised |
-| `seeding-test-data` | Test data through fixtures and the API, unique names, cleanup | Planned |
-| `writing-ui-tests` | Browser scenario tests on top of page objects and seeded data | Planned |
-| `writing-api-tests` | API scenario and contract tests | Planned |
-| `reviewing-changes` | Checks a change against the conventions | Planned |
-| `verifying-tests` | `--repeat-each`, flaky test triage, known-bug markers | Planned |
+| `test-scenario-discovery` | Mines eShop's source and the running app into rows for a module's scenario catalog (`test-tooling/scenarios/<module>.scenarios.json`, rules in [`scenario-catalog.md`](scenario-catalog.md)), for review. Flags suspected defects in the rows; never logs bugs | Written from mining basket; tested by a fresh agent mining ordering, revised |
+| `mapping-page-objects` | Maps the parts of a page the current test needs, from its source and the live page | Written, tested on the cart, revised; to be rescoped to "map what the test needs" with the first test-writing work |
+| `test-writer` | UI and API scenario tests from approved catalog rows, with `claims()`; logs a bug (`pnpm bugs:add`) only when a correct test fails | Planned |
+| `test-data-seeder` | Test data through fixtures and the API, unique names, cleanup | Planned |
+| `test-reviewer` | Checks a change against the conventions and the rows it claims; runs the tests (`--repeat-each`, flaky triage, known-bug markers) | Planned |
 
 Each skill is written from real work, not up front: do the task for real, note where an agent
 stalled, guessed or needed correcting, write the skill to fix exactly that, then check a fresh
@@ -37,11 +35,11 @@ agent gets it right on a second task.
 
 | Agent | Uses | May |
 | --- | --- | --- |
-| Scenario explorer | `discovering-scenarios` | Read eShop's source and the repo; drive the browser (Playwright MCP). No edits. |
-| Page mapper | `mapping-page-objects` | Read eShop's source; drive the browser; write in `pages/` and `fixtures/` |
-| Data seeder | `seeding-test-data` | Write in `helpers/`, `fixtures/`, `api/` |
-| Test writer | `writing-ui-tests`, `writing-api-tests`, `seeding-test-data`, `verifying-tests`; `mapping-page-objects` when a page object is missing | Write in `tests/` and the layers it needs; run tests |
-| Reviewer | `reviewing-changes`, `verifying-tests` | Read and run tests. No edits. Starts with a fresh context and never sees how the change was written. |
+| Scenario miner | `test-scenario-discovery` | Read eShop's source and the repo; drive the browser (Playwright MCP); write only `test-tooling/scenarios/<module>.scenarios.json` and throwaway probes |
+| Test writer | `test-writer`, `mapping-page-objects`, `test-data-seeder` | Write in `tests/` and the layers it needs (`pages/`, `fixtures/`, `helpers/`, `api/`); log bugs with `pnpm bugs:add`; run tests |
+| Data seeder | `test-data-seeder` | Write in `helpers/`, `fixtures/`, `api/` |
+| Reviewer | `test-reviewer` | Read and run tests. No edits. Starts with a fresh context and never sees how the change was written. |
+| `playwright-suite` | Test writer, data seeder and reviewer together | Works from approved catalog rows a module's tests don't claim yet; one batch at a time, each passing review before it's pushed to the module's pull request |
 
 Agents are built only after the skills they use have been tested.
 
@@ -104,11 +102,17 @@ Source code wins on *what exists*; the live page wins on *how to locate it*.
   until re-mapped with a test user) and the header bar component (`HeaderBar`).
 - Test data: static users (`data/users.json`) for logged-in reads; the `testUser` fixture for
   tests that change a basket, orders or profile.
-- Skills: `mapping-page-objects`, written from mapping the catalog pages, then tested by a fresh
-  agent mapping the cart page and revised from that run (login-gated and stream-rendered pages,
-  inventory scope, probe checks, states confirmed as a test user). Next: a fresh agent re-maps the
-  cart with the revised skill and confirms its Unverified elements as a test user.
+- Skills:
+  - `mapping-page-objects`, written from mapping the catalog pages, tested on the cart and
+    revised. Next: rescope it to "map what the test needs" with the first test-writing work.
+  - `test-scenario-discovery`, written from mining the basket module, tested by a fresh agent
+    mining ordering, and revised from that run (evidence when eShop's tests pin a buggy status,
+    wording refusals, unreachable layers, background-process timing).
 - Scenario catalog: format, inventory, `claims()`, check and report in place
-  (`docs/scenario-catalog.md`). One pilot catalog, `catalog`, written from the existing tests.
-  Next: write `discovering-scenarios` from filling a second module's catalog.
+  (`docs/scenario-catalog.md`). Catalogs: `catalog` (pilot, written from the existing tests),
+  `basket` (27 rows, mined) and `ordering` (59 rows, mined by a fresh agent with the skill).
+- Known bugs: `data/bugs.json`, `knownBug()`, the known-bugs reporter, `pnpm bugs:add` and
+  `pnpm bugs:sync`.
+- Not yet: an API layer for basket. Basket's API is gRPC, which the inventory doesn't list; it
+  needs gRPC methods in `supplement.json` and a gRPC client with a bearer token.
 - Agents: none yet.
