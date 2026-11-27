@@ -18,7 +18,11 @@
     "test:headed": "playwright test --project=chromium --headed",
     "typecheck": "tsc --noEmit",
     "report": "playwright show-report",
-    "generate:api-types": "node scripts/download-openapi.mjs && openapi-typescript api/generated/catalog.v1.openapi.json -o api/generated/catalog.ts && openapi-typescript api/generated/ordering.v1.openapi.json -o api/generated/ordering.ts"
+    "generate:api-types": "node scripts/download-openapi.mjs && openapi-typescript api/generated/catalog.v1.openapi.json -o api/generated/catalog.ts && openapi-typescript api/generated/ordering.v1.openapi.json -o api/generated/ordering.ts",
+    "test:tooling": "node --import tsx --test \"test-tooling/**/*.toolingtest.ts\"",
+    "check:scenarios": "tsx scripts/check-scenarios.ts",
+    "scenarios:report": "tsx scripts/scenarios-report.ts",
+    "inventory:generate": "tsx scripts/generate-inventory.ts"
   },
   "devDependencies": {
     "@playwright/mcp": "0.0.85",
@@ -29,6 +33,7 @@
     "ajv-formats": "3.0.1",
     "openapi-typescript": "^7.13.0",
     "pg": "^8.23.1",
+    "tsx": "4.23.15",
     "typescript": "^5.7.2"
   }
 }

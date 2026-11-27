@@ -103,3 +103,4 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
 });
 
 export { expect };
+export { claims } from '../test-tooling/scenarios/claims';
