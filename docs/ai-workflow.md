@@ -21,7 +21,7 @@ one human checkpoint: approving which scenarios get tested.
 
 | Skill | Does | Status |
 | --- | --- | --- |
-| `test-scenario-discovery` | Mines eShop's source and the running app into rows for a module's scenario catalog (`test-tooling/scenarios/<module>.scenarios.json`, rules in [`scenario-catalog.md`](scenario-catalog.md)), for review. Flags suspected defects in the rows; never logs bugs | Written from mining basket; being tested on ordering |
+| `test-scenario-discovery` | Mines eShop's source and the running app into rows for a module's scenario catalog (`test-tooling/scenarios/<module>.scenarios.json`, rules in [`scenario-catalog.md`](scenario-catalog.md)), for review. Flags suspected defects in the rows; never logs bugs | Written from mining basket; tested by a fresh agent mining ordering, revised |
 | `mapping-page-objects` | Maps the parts of a page the current test needs, from its source and the live page | Written, tested on the cart, revised; to be rescoped to "map what the test needs" with the first test-writing work |
 | `test-writer` | UI and API scenario tests from approved catalog rows, with `claims()`; logs a bug (`pnpm bugs:add`) only when a correct test fails | Planned |
 | `test-data-seeder` | Test data through fixtures and the API, unique names, cleanup | Planned |
@@ -105,11 +105,12 @@ Source code wins on *what exists*; the live page wins on *how to locate it*.
 - Skills:
   - `mapping-page-objects`, written from mapping the catalog pages, tested on the cart and
     revised. Next: rescope it to "map what the test needs" with the first test-writing work.
-  - `test-scenario-discovery`, written from mining the basket module. Next: a fresh agent mines
-    ordering with it, and the skill is revised from that run.
+  - `test-scenario-discovery`, written from mining the basket module, tested by a fresh agent
+    mining ordering, and revised from that run (evidence when eShop's tests pin a buggy status,
+    wording refusals, unreachable layers, background-process timing).
 - Scenario catalog: format, inventory, `claims()`, check and report in place
-  (`docs/scenario-catalog.md`). Catalogs: `catalog` (pilot, written from the existing tests) and
-  `basket` (27 rows, mined).
+  (`docs/scenario-catalog.md`). Catalogs: `catalog` (pilot, written from the existing tests),
+  `basket` (27 rows, mined) and `ordering` (59 rows, mined by a fresh agent with the skill).
 - Known bugs: `data/bugs.json`, `knownBug()`, the known-bugs reporter, `pnpm bugs:add` and
   `pnpm bugs:sync`.
 - Not yet: an API layer for basket. Basket's API is gRPC, which the inventory doesn't list; it

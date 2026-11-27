@@ -36,8 +36,9 @@ The rules for a row (ids, what listing a screen or endpoint promises, kinds, sou
    and in other services (checkout empties the bag). Trace from each screen and endpoint into:
    the web app's services (`src/WebApp/Services`), the API's handlers and models, scripts in
    `wwwroot/js`, and integration events. Rules live in services more often than in pages.
-   Where each kind of file lives:
-   `.claude/skills/mapping-page-objects/eshop-sources.md`.
+   Where each kind of file lives: [requirement-evidence.md](requirement-evidence.md), "Finding a
+   service's parts". Before writing an effect that crosses into another module (checkout empties
+   the bag), read that module's catalog: if a row there already states it, don't repeat it.
 
 3. **Collect requirement evidence for each behaviour,** best source first:
    [requirement-evidence.md](requirement-evidence.md). A row says what that evidence requires,
@@ -63,6 +64,14 @@ The rules for a row (ids, what listing a screen or endpoint promises, kinds, sou
      (`tests/ui/zz-mining-probe.spec.ts`) using the `testUser` and API fixtures, which prints what
      it sees, asserts nothing, and is deleted after the run. Pages that stream can hang rather
      than fail: give the probe a long timeout and sample the page over time.
+   - Flows driven by background processes take minutes. Read their timing first (OrderProcessor's
+     grace period and poll interval, in requirement-evidence.md), set the probe's timeout past
+     it, and sample more often than the fastest step, or intermediate states slip by unseen.
+   - When a layer can't be reached (an API that needs a bearer token the suite can't get), don't
+     stop: write the row and add "Not checked live: <why>." to `sourceNote`.
+   - Record what you saw as "Seen live <YYYY-MM-DD>: <what>." in `sourceNote`.
+   - A probe may leave data behind only when a test-owned user owns it (an order placed as
+     `testUser` stays in orderingdb after the user is deleted). Say so in the report.
    - Never change static users (`data/users.json`) or seeded data to reach a state.
 
 6. **Write the rows.** One checkable sentence each; split a sentence that needs "and" between
@@ -72,17 +81,32 @@ The rules for a row (ids, what listing a screen or endpoint promises, kinds, sou
    - An endpoint only when the behaviour is that endpoint's contract. A page behaviour is not an
      endpoint's even when the page calls one, and the web app's own form posts (Blazor's
      `POST /cart` with `_handler`) are the screen, not an API.
-   - Another module's screen is allowed when the behaviour is this module's; the check warns.
+   - Another module's screen or endpoint is allowed when the behaviour is this module's and that is
+     the only place it can be seen (stock drops in the Catalog API after an order is paid); the
+     check warns.
+   - A UI action whose result only an API shows (the address entered at checkout) lists the screen
+     only; the UI test may read the API to check it.
+   - **Refusals:** name the status when the contract documents it ("returns 400"). When eShop's
+     sources disagree on it, or the contract documents none, write "is refused" plus what stays
+     unchanged ("…, and the order keeps its status"), and put the disagreement in `sourceNote`.
+     Every Ordering and Catalog call goes through the suite's `ContractValidator`, which throws on
+     an undocumented status; the writer decides how to handle that, not the row.
+   - A row that needs a system-wide setting to reach (payment failure needs PaymentProcessor's
+     `PaymentSucceeded: false`) is still written; name the setting in `sourceNote`.
    - `sourceNote` names the eShop `file:line` (or eShop's test) the row stands on.
    - `lastUpdated` is today.
 
 7. **Leave out** what no user or caller can observe: decorative elements, framework internals
-   (antiforgery fields, form handler names), and how something is implemented.
+   (antiforgery fields, form handler names), how something is implemented, and transient states
+   no one acts on ("Loading your orders...").
 
 8. **Check:** `pnpm check:scenarios` (0 errors; every warning explained in the report), then
-   `pnpm scenarios:report <module>`.
+   `pnpm scenarios:report <module>`. Keep the file's formatting as the other catalogs have it
+   (2-space indent, `screens` and `endpoints` on one line): edit it as text, since a
+   `JSON.stringify` rewrite expands every array and buries the real change in the diff.
 
-9. **Open the pull request; it is the approval step.** Its description has:
+9. **Open the pull request; it is the approval step.** When the brief says not to push, write the
+   description to `docs/superpowers/<module>-pr-description.md` instead. The description has:
    - rows per kind, with what each kind covers
    - every suspected defect, with its evidence and what was seen
    - gaps: kinds with no source (regression), layers the inventory can't hold (gRPC, for one),

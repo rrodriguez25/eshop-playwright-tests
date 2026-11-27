@@ -18,5 +18,21 @@ source a behaviour has, cite it in `sourceNote`, and pick `source` to match. Pat
 
 Not available: a ticket tracker, and the clone's own history (it is one squashed commit).
 
-When sources disagree, the stronger one states the row and the disagreement goes in `sourceNote`
-("OpenAPI documents 400; the handler returns 500").
+When sources disagree, the one that states **intent** sets the row, and the disagreement goes in
+`sourceNote` ("OpenAPI documents 400; the handler returns 500").
+- Validators, the domain model and OpenAPI state intent. Code states what happens.
+- An eShop test is strong evidence of intent when it asserts an outcome (the bag is gone, the order
+  is cancelled). A test that only asserts a status code is weak: eShop's own `AddNewOrder` posts
+  an order its validator refuses and expects 200, and `CancelNonExistentOrderFails` pins an
+  undocumented 500. Don't let such a test turn a buggy status into a row.
+
+## Finding a service's parts
+
+| Service | Where |
+| --- | --- |
+| Web app pages, services, scripts | `src/WebApp/Components/Pages`, `src/WebApp/Services`, `src/WebApp/wwwroot/js` |
+| An API's endpoints and handlers | `src/<Service>.API/Apis/*.cs`; commands, queries and validators under `src/<Service>.API/Application` |
+| Ordering's rules | `src/Ordering.Domain/AggregatesModel` |
+| Background processes | `src/OrderProcessor` (grace period: `GracePeriodTime` and `CheckUpdateTime` in its `appsettings.json`), `src/PaymentProcessor` (`PaymentSucceeded` in its `appsettings.json`) |
+| Who reacts to an integration event | grep `AddSubscription<` across `src/` |
+| Where a page or component's source lives | `.claude/skills/mapping-page-objects/eshop-sources.md` |
