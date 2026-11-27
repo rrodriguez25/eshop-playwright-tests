@@ -75,8 +75,8 @@ export interface ScenarioRow {
   source: Source;
   sourceNote: string;
   status: Status;
-  added: string;
-  changed: string;
+  /** The day the row was written or last changed, YYYY-MM-DD. */
+  lastUpdated: string;
 }
 
 /** One `<module>.scenarios.json`. */

@@ -33,12 +33,7 @@ function rowProblems(file: CatalogFile, module: ModuleEntry, where: string): Pro
     if (!row.id.startsWith(`${module.prefix}-`)) {
       error(`${row.id} does not start with the module's prefix ${module.prefix}-`);
     }
-    for (const [field, value] of [['added', row.added], ['changed', row.changed]] as const) {
-      if (!isRealDay(value)) error(`${row.id}: ${field} ${value} is not a real date`);
-    }
-    if (isRealDay(row.added) && isRealDay(row.changed) && row.changed < row.added) {
-      error(`${row.id}: changed ${row.changed} is before added ${row.added}`);
-    }
+    if (!isRealDay(row.lastUpdated)) error(`${row.id}: lastUpdated ${row.lastUpdated} is not a real date`);
   }
   return problems;
 }

@@ -12,8 +12,7 @@
       "source": "existing-test",
       "sourceNote": "tests/api/catalog.api.spec.ts 'returns paginated items with correct shape'",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     },
     {
       "id": "CAT-READ-FILTER-NAME-PREFIX",
@@ -24,8 +23,7 @@
       "source": "existing-test",
       "sourceNote": "tests/api/catalog.api.spec.ts 'filters by name prefix'",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     },
     {
       "id": "CAT-READ-PAGE-SIZE",
@@ -36,8 +34,7 @@
       "source": "existing-test",
       "sourceNote": "tests/api/catalog.api.spec.ts 'respects pageSize'",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     },
     {
       "id": "CAT-READ-FILTER-TYPE",
@@ -48,8 +45,7 @@
       "source": "existing-test",
       "sourceNote": "tests/api/catalog.api.spec.ts 'filters by type ids and returns only matching items'",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     },
     {
       "id": "CAT-READ-FILTER-COMBINED",
@@ -60,8 +56,7 @@
       "source": "existing-test",
       "sourceNote": "tests/api/catalog.api.spec.ts 'filters by name and type and brand combined'. The test checks the page's shape only, not that each item matches all three filters.",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     },
     {
       "id": "CAT-READ-BY-IDS",
@@ -72,8 +67,7 @@
       "source": "existing-test",
       "sourceNote": "tests/api/catalog.api.spec.ts 'getItemsByIds returns matching items'",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     },
     {
       "id": "CAT-READ-BY-IDS-EMPTY",
@@ -84,8 +78,7 @@
       "source": "existing-test",
       "sourceNote": "tests/api/catalog.api.spec.ts 'getItemsByIds with empty array returns empty list'",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     },
     {
       "id": "CAT-READ-ITEM-BY-ID",
@@ -96,8 +89,7 @@
       "source": "existing-test",
       "sourceNote": "tests/api/catalog.api.spec.ts 'returns item by id'",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     },
     {
       "id": "CAT-VAL-ITEM-ID-INVALID",
@@ -108,8 +100,7 @@
       "source": "existing-test",
       "sourceNote": "tests/api/catalog-contract.api.spec.ts; rule in eShop src/Catalog.API/Apis/CatalogApi.cs:222",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     },
     {
       "id": "CAT-VAL-ITEM-MISSING",
@@ -120,8 +111,7 @@
       "source": "existing-test",
       "sourceNote": "tests/api/catalog-contract.api.spec.ts 'GET /items/{id} for a missing item returns the documented 404'",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     },
     {
       "id": "CAT-READ-TYPES",
@@ -132,8 +122,7 @@
       "source": "existing-test",
       "sourceNote": "tests/api/catalog.api.spec.ts 'returns non-empty types list'",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     },
     {
       "id": "CAT-READ-BRANDS",
@@ -144,8 +133,7 @@
       "source": "existing-test",
       "sourceNote": "tests/api/catalog.api.spec.ts 'returns non-empty brands list'",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     },
     {
       "id": "CAT-WRITE-CREATE",
@@ -156,8 +144,7 @@
       "source": "existing-test",
       "sourceNote": "tests/api/catalog.api.spec.ts 'createItem returns a positive integer id', 'created item is fetchable by id'",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     },
     {
       "id": "CAT-VAL-CREATE-NO-NAME",
@@ -168,8 +155,7 @@
       "source": "existing-test",
       "sourceNote": "tests/api/catalog-contract.api.spec.ts 'POST /items without a name returns the documented 400'. Known eShop bug: returns an undocumented 500.",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     },
     {
       "id": "CAT-WRITE-UPDATE-PRICE",
@@ -180,8 +166,7 @@
       "source": "existing-test",
       "sourceNote": "tests/api/catalog.api.spec.ts 'updateItem changes a field on the item'",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     },
     {
       "id": "CAT-WRITE-DELETE",
@@ -192,8 +177,7 @@
       "source": "existing-test",
       "sourceNote": "tests/api/catalog.api.spec.ts 'deleteItem removes the item'",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     },
     {
       "id": "CAT-VAL-DELETE-MISSING",
@@ -204,8 +188,7 @@
       "source": "existing-test",
       "sourceNote": "tests/api/catalog-contract.api.spec.ts 'DELETE /items/{id} for a missing item returns the documented 404'. 'deleteItem on non-existent id throws' in catalog.api.spec.ts checks only that it fails, so it does not claim this row.",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     },
     {
       "id": "CAT-UI-HOME-OPENS",
@@ -216,8 +199,7 @@
       "source": "existing-test",
       "sourceNote": "tests/ui/smoke.spec.ts 'loads successfully'",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     },
     {
       "id": "CAT-UI-ITEM-OPENS",
@@ -228,8 +210,7 @@
       "source": "existing-test",
       "sourceNote": "tests/ui/smoke.spec.ts 'loads for an existing item'",
       "status": "active",
-      "added": "2026-11-26",
-      "changed": "2026-11-26"
+      "lastUpdated": "2026-11-26"
     }
   ]
 }

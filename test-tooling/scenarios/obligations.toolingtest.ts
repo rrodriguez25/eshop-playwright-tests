@@ -7,7 +7,7 @@ import type { CatalogFile, ScenarioRow } from '../types';
 function row(id: string, overrides: Partial<ScenarioRow> = {}): ScenarioRow {
   return {
     id, behaviour: 'x', screens: [], endpoints: [], kind: 'happy', source: 'existing-test', sourceNote: '',
-    status: 'active', added: '2026-11-26', changed: '2026-11-26', ...overrides,
+    status: 'active', lastUpdated: '2026-11-26', ...overrides,
   };
 }
 

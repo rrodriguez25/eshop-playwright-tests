@@ -32,8 +32,7 @@ function row(overrides: Partial<ScenarioRow> = {}): ScenarioRow {
     source: 'existing-test',
     sourceNote: 'tests/api/catalog.api.spec.ts',
     status: 'active',
-    added: '2026-11-26',
-    changed: '2026-11-26',
+    lastUpdated: '2026-11-26',
     ...overrides,
   };
 }
@@ -129,15 +128,17 @@ test('rejects an id used twice across catalogs', () => {
 });
 
 test('rejects 2026-02-30', () => {
-  const { problems } = load({ 'catalog.scenarios.json': catalog([row({ added: '2026-02-30', changed: '2026-03-01' })]) });
+  const { problems } = load({ 'catalog.scenarios.json': catalog([row({ lastUpdated: '2026-02-30' })]) });
 
   assert.equal(errorsMatching(problems, /2026-02-30/).length, 1);
 });
 
-test('rejects changed before added', () => {
-  const { problems } = load({ 'catalog.scenarios.json': catalog([row({ added: '2026-11-26', changed: '2026-11-01' })]) });
+test('rejects a row that still has added and changed instead of lastUpdated', () => {
+  const { lastUpdated: _lastUpdated, ...rest } = row();
+  const oldRow = { ...rest, added: '2026-11-26', changed: '2026-11-26' };
+  const { problems } = load({ 'catalog.scenarios.json': { module: 'catalog', prefix: 'CAT', scenarios: [oldRow] } });
 
-  assert.equal(errorsMatching(problems, /before/).length, 1);
+  assert.ok(errorsMatching(problems, /lastUpdated|added|changed/).length > 0);
 });
 
 test('rejects an active row naming an unknown screen or endpoint', () => {

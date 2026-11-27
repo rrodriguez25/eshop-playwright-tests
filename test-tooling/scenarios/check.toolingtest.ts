@@ -8,7 +8,7 @@ import { makeTempDir, writeTempFile } from '../test-support';
 
 const ROW = {
   behaviour: 'x', screens: [], endpoints: ['GET /api/catalog/items'], kind: 'happy', source: 'existing-test',
-  sourceNote: '', added: '2026-11-26', changed: '2026-11-26',
+  sourceNote: '', lastUpdated: '2026-11-26',
 };
 
 /** A temp repo with one module, one endpoint, the given rows and the given specs. */
