@@ -43,9 +43,9 @@ export class ItemPage extends BasePage<{ itemId: number }> {
   readonly inBagNotice: Locator;
   // Unverified: from ItemPage.razor, inside inBagNotice; renders under the same condition.
   readonly inBagShoppingBagLink: Locator;
-  // Unverified: from ItemPage.razor, renders when the item id doesn't exist. It never renders: known bug item-404-empty-body (data/bugs.json).
+  // Unverified: from ItemPage.razor, renders when the item id doesn't exist. It never renders: known bug issue-2026-11-25-49350 (data/bugs.json).
   readonly notFoundHeading: Locator;
-  // Unverified: from ItemPage.razor, same condition as notFoundHeading (known bug item-404-empty-body).
+  // Unverified: from ItemPage.razor, same condition as notFoundHeading (known bug issue-2026-11-25-49350).
   readonly notFoundMessage: Locator;
 
   constructor(page: Page) {

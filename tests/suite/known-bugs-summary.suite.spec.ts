@@ -12,12 +12,12 @@ const knownBugAnnotation = (description: string) => ({ type: 'known-bug', descri
 
 test.describe('parseKnownBugAnnotation', () => {
   test('parses a known-bug annotation', () => {
-    expect(parseKnownBugAnnotation('item-404-empty-body: looks-fixed'))
-      .toEqual({ bugId: 'item-404-empty-body', outcome: 'looks-fixed' });
+    expect(parseKnownBugAnnotation('issue-2026-11-25-49350: looks-fixed'))
+      .toEqual({ bugId: 'issue-2026-11-25-49350', outcome: 'looks-fixed' });
   });
 
   test('ignores a malformed annotation', () => {
-    expect(parseKnownBugAnnotation('item-404-empty-body: maybe')).toBeUndefined();
+    expect(parseKnownBugAnnotation('issue-2026-11-25-49350: maybe')).toBeUndefined();
     expect(parseKnownBugAnnotation('nothing')).toBeUndefined();
   });
 });

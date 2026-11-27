@@ -325,6 +325,9 @@ export class CheckoutPage extends BasePage {
 - No `test.only`. `test.skip` and `test.fixme` include a reason.
 - A known eShop bug is added to `data/bugs.json` first. The test then wraps only the assertion
   that shows it: `await knownBug('<bug id>', async () => { … })`.
+  - The id is `issue-<year>-<month>-<day>-<5 random digits>`: the date the bug was found, such as
+    `issue-2026-11-25-49350`. Loading `bugs.json` rejects any other id. Ids carry no meaning, so
+    put a one-line comment naming the bug above each `knownBug` call.
   - While the bug is `open`, a failure there becomes an expected failure.
   - After each run, the known-bugs reporter prints which bugs are still present, look fixed, are
     back after a fix, or have stale wrappers.

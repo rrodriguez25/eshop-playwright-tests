@@ -52,24 +52,31 @@ test.describe('knownBug', () => {
   });
 });
 
+const ID = 'issue-2026-11-25-00001';
+
 test.describe('parseBugs', () => {
+  test('rejects an id that is not issue-<year>-<month>-<day>-<5 digits>', () => {
+    expect(() => parseBugs({ 'item-404-empty-body': { title: 't', priority: 'low', status: 'open' } }))
+      .toThrow('bugs.json: "item-404-empty-body" must be named issue-YYYY-MM-DD-NNNNN');
+  });
+
   test('rejects an entry with an invalid status', () => {
-    expect(() => parseBugs({ x: { title: 't', priority: 'low', status: 'closed' } }))
-      .toThrow('bugs.json: "x".status must be "open" or "fixed"');
+    expect(() => parseBugs({ [ID]: { title: 't', priority: 'low', status: 'closed' } }))
+      .toThrow('bugs.json: "issue-2026-11-25-00001".status must be "open" or "fixed"');
   });
 
   test('keeps the fields in file order', () => {
-    const parsed = parseBugs({ x: { status: 'open', title: 't', module: 'item', priority: 'low' } });
+    const parsed = parseBugs({ [ID]: { status: 'open', title: 't', module: 'item', priority: 'low' } });
 
-    expect(Object.keys(parsed.x ?? {})).toEqual(['status', 'title', 'module', 'priority']);
+    expect(Object.keys(parsed[ID] ?? {})).toEqual(['status', 'title', 'module', 'priority']);
   });
 
   test('rejects an unknown field', () => {
-    expect(() => parseBugs({ x: { title: 't', priority: 'low', status: 'open', notes: 'n' } }))
-      .toThrow('bugs.json: "x".notes is not a known field');
+    expect(() => parseBugs({ [ID]: { title: 't', priority: 'low', status: 'open', notes: 'n' } }))
+      .toThrow('bugs.json: "issue-2026-11-25-00001".notes is not a known field');
   });
 
   test('rejects an entry without a title', () => {
-    expect(() => parseBugs({ x: { priority: 'low', status: 'open' } })).toThrow('bugs.json: "x".title');
+    expect(() => parseBugs({ [ID]: { priority: 'low', status: 'open' } })).toThrow('bugs.json: "issue-2026-11-25-00001".title');
   });
 });

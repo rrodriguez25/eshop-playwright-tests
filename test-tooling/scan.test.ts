@@ -52,7 +52,7 @@ test('marks a knownBug(...) call inside the body as knownBug', () => {
   const { claims } = scan({
     'tests/api/a.api.spec.ts': `${HEADER}
 test('returns 400', claims('CAT-VAL-NAME', 'api'), async ({ catalog }) => {
-  await knownBug('catalog-create-missing-name-500', async () => {
+  await knownBug('issue-2026-11-25-35712', async () => {
     await expect(catalog.create()).rejects.toThrow('-> 400');
   });
 });

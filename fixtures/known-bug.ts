@@ -71,7 +71,7 @@ export const bugs: Record<BugId, BugEntry> = parsedBugs;
  * last in the test: nothing after a present bug runs.
  *
  * ```ts
- * await knownBug('item-404-empty-body', async () => {
+ * await knownBug('issue-2026-11-25-49350', async () => {
  *   await itemPage.goto({ itemId: MISSING_ITEM_ID });
  *   await expect(itemPage.notFoundHeading).toBeVisible();
  * });

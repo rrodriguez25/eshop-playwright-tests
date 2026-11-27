@@ -1,5 +1,5 @@
 {
-  "item-404-empty-body": {
+  "issue-2026-11-25-49350": {
     "title": "A missing item returns 404 with an empty body, so the not-found message never renders",
     "priority": "medium",
     "status": "open",
@@ -9,7 +9,7 @@
     "actual": "HTTP 404, empty body; Chromium shows net::ERR_HTTP_RESPONSE_CODE_FAILURE",
     "source": "src/WebApp/Components/Pages/Item/ItemPage.razor"
   },
-  "catalog-create-missing-name-500": {
+  "issue-2026-11-25-35712": {
     "title": "POST /api/catalog/items without a name fails in the database and returns an undocumented 500",
     "priority": "medium",
     "status": "open",
@@ -19,7 +19,7 @@
     "actual": "500, undocumented: the missing name fails in the database",
     "source": "src/Catalog.API/Apis/CatalogApi.cs"
   },
-  "identity-login-missing-assets": {
+  "issue-2026-11-25-33827": {
     "title": "Identity's login page requests bootstrap and jquery files that return 404",
     "priority": "low",
     "status": "open",

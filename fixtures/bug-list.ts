@@ -20,6 +20,9 @@ export type KnownBugOutcome = 'present' | 'looks-fixed' | 'regressed' | 'stale';
 
 export const KNOWN_BUG_OUTCOMES: readonly KnownBugOutcome[] = ['present', 'looks-fixed', 'regressed', 'stale'];
 
+/** A bug id: `issue-`, the date the bug was found, then 5 random digits, such as `issue-2026-11-25-49350`. */
+const BUG_ID = /^issue-\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])-\d{5}$/;
+
 const PRIORITIES = ['high', 'medium', 'low'] as const;
 const STATUSES = ['open', 'fixed'] as const;
 const FOUND = ['mining', 'writing'] as const;
@@ -32,6 +35,9 @@ export function parseBugs(raw: unknown): Record<string, BugEntry> {
   }
   const bugs: Record<string, BugEntry> = {};
   for (const [id, value] of Object.entries(raw)) {
+    if (!BUG_ID.test(id)) {
+      throw new Error(`bugs.json: "${id}" must be named issue-YYYY-MM-DD-NNNNN (the date it was found, then 5 random digits)`);
+    }
     if (!isRecord(value)) {
       throw new Error(`bugs.json: "${id}" must be an object`);
     }
