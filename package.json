@@ -16,6 +16,7 @@
     "test:preflight": "playwright test --project=preflight",
     "test:suite": "playwright test --project=suite",
     "bugs:sync": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/sync-bugs.ts",
+    "bugs:add": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/add-bug.ts",
     "test:contract": "playwright test --project=api --grep @contract",
     "test:headed": "playwright test --project=chromium --headed",
     "typecheck": "tsc --noEmit",

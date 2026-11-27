@@ -1,7 +1,8 @@
 /**
- * The shape of `data/bugs.json` and its validation. No imports, so plain Node can run it
- * (`scripts/sync-bugs.ts`) as well as Playwright.
+ * The shape of `data/bugs.json`, its validation, and new entries. Only Node built-ins, so plain
+ * Node can run it (`scripts/sync-bugs.ts`, `scripts/add-bug.ts`) as well as Playwright.
  */
+import { randomInt } from 'node:crypto';
 
 /** One known eShop bug from `data/bugs.json`. */
 export interface BugEntry {
@@ -88,6 +89,39 @@ function inFileOrder(id: string, entry: BugEntry, fileKeys: string[]): BugEntry 
 function copyField<K extends keyof BugEntry>(target: Partial<BugEntry>, source: BugEntry, key: K): void {
   const value = source[key];
   if (value !== undefined) target[key] = value;
+}
+
+/** A bug being logged: everything but `status`, which starts as `open`. */
+export type NewBug = Omit<BugEntry, 'status'>;
+
+/**
+ * A new bug id for `day`: `issue-YYYY-MM-DD-` and 5 random digits, drawn again while the id is
+ * in `taken`. `random` returns 0 to 99999 and is only replaced in tests.
+ */
+export function newBugId(day: Date, taken: readonly string[], random: () => number = () => randomInt(0, 100_000)): string {
+  const date = [day.getFullYear(), day.getMonth() + 1, day.getDate()].map(part => String(part).padStart(2, '0')).join('-');
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const id = `issue-${date}-${String(random()).padStart(5, '0')}`;
+    if (!taken.includes(id)) return id;
+  }
+  throw new Error(`Could not find a free bug id for ${date} after 100 draws`);
+}
+
+/**
+ * `bugs` with `bug` appended under `id` as `open`. Throws if the id is used or the entry is
+ * invalid. Takes raw fields (command-line input) as well as a `NewBug`, and validates them as
+ * loading `bugs.json` does.
+ */
+export function addBug(bugs: Record<string, BugEntry>, id: string, bug: NewBug | Record<string, unknown>): Record<string, BugEntry> {
+  if (Object.hasOwn(bugs, id)) {
+    throw new Error(`bugs.json already has "${id}"`);
+  }
+  const { title, priority, ...details } = bug;
+  const entry = parseBugs({ [id]: { title, priority, status: 'open', ...details } })[id];
+  if (entry === undefined) {
+    throw new Error(`bugs.json: "${id}" could not be added`);
+  }
+  return { ...bugs, [id]: entry };
 }
 
 export function isRecord(value: unknown): value is Record<string, unknown> {

@@ -323,11 +323,14 @@ export class CheckoutPage extends BasePage {
   It is the one per-test tag. Claim only what the assertions check. Rules:
   [`scenario-catalog.md`](scenario-catalog.md).
 - No `test.only`. `test.skip` and `test.fixme` include a reason.
-- A known eShop bug is added to `data/bugs.json` first. The test then wraps only the assertion
-  that shows it: `await knownBug('<bug id>', async () => { … })`.
-  - The id is `issue-<year>-<month>-<day>-<5 random digits>`: the date the bug was found, such as
-    `issue-2026-11-25-49350`. Loading `bugs.json` rejects any other id. Ids carry no meaning, so
-    put a one-line comment naming the bug above each `knownBug` call.
+- A known eShop bug is logged in `data/bugs.json` first, with
+  `pnpm bugs:add --title "…" --priority <high|medium|low> [--module …] [--found <mining|writing>]
+  [--expected …] [--actual …] [--source …]`, which prints its id. The test then wraps only the
+  assertion that shows it: `await knownBug('<bug id>', async () => { … })`.
+  - The id is `issue-<year>-<month>-<day>-<5 random digits>`: the date the bug was logged, such as
+    `issue-2026-11-25-49350`. `bugs:add` makes it; never write one by hand. Loading `bugs.json`
+    rejects any other id. Ids carry no meaning, so put a one-line comment naming the bug above
+    each `knownBug` call.
   - While the bug is `open`, a failure there becomes an expected failure.
   - After each run, the known-bugs reporter prints which bugs are still present, look fixed, are
     back after a fix, or have stale wrappers.
